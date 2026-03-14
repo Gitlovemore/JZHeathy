@@ -1,0 +1,2356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<title>极致健康管理</title>
+<style>
+/* 使用系统字体，无需外部加载，完全离线可用 */
+/* iOS: PingFang SC | Android: Noto Sans CJK | macOS: PingFang SC | Windows: Microsoft YaHei */
+</style>
+<style>
+:root {
+  --sage:#7a9e7e; --sage-light:#a8c5ac; --sage-dark:#4a7050;
+  --cream:#f9f5ef; --warm-white:#fdfaf5;
+  --charcoal:#2c2c2c; --gray:#6b6b6b; --border:#d9d3c8;
+  --red:#d94f3f; --red-bg:#fff0ee; --red-light:#fde8e5;
+  --green:#3e9e6a; --green-bg:#edfbf3;
+  --blue:#5a7fa8; --amber:#c8856c;
+  --ring:#7a9e7e33;
+  --nav-h:56px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:14px}
+body{font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{background:var(--warm-white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:300}
+.nav-inner{max-width:980px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:var(--nav-h);padding:0 16px;gap:8px}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:17px;color:var(--sage-dark);display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.nav-right{display:flex;align-items:center;gap:6px;min-width:0}
+.nav-tabs{display:flex;gap:2px;flex-shrink:0}
+.nav-tab{padding:6px 12px;border-radius:20px;border:none;background:transparent;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:13px;color:var(--gray);cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-tab.active,.nav-tab:hover{background:var(--sage);color:#fff}
+.user-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;background:var(--cream);border:1px solid var(--border);font-size:12px;color:var(--gray);cursor:pointer;transition:all .2s;max-width:120px;overflow:hidden}
+.user-chip:hover{border-color:var(--sage);color:var(--sage-dark)}
+.user-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex-shrink:0}
+.u-dot.off{background:#bbb}
+
+/* ── BOTTOM NAV (mobile) ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--warm-white);border-top:1px solid var(--border);z-index:300;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav-inner{display:flex;justify-content:space-around;padding:6px 0}
+.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:transparent;color:var(--gray);font-size:10px;cursor:pointer;padding:4px 12px;border-radius:10px;transition:all .2s;font-family:'PingFang SC','Microsoft YaHei',sans-serif,sans-serif}
+.bnav-btn .bi{font-size:20px}
+.bnav-btn.active{color:var(--sage-dark)}
+.bnav-btn.active .bi{filter:drop-shadow(0 0 4px var(--sage))}
+
+/* ── LAYOUT ── */
+.container{max-width:980px;margin:0 auto;padding:20px 14px 80px}
+.page{display:none}.page.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--warm-white);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px}
+.card-title{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;color:var(--sage-dark);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:3px;height:16px;background:var(--sage);border-radius:2px;flex-shrink:0}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+label{font-size:12px;color:var(--gray);font-weight:500;display:flex;align-items:center;gap:4px}
+input,select,textarea{padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--cream);font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:14px;color:var(--charcoal);transition:border-color .2s,box-shadow .2s;width:100%;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 3px var(--ring)}
+input[readonly]{background:#eee;color:var(--gray);cursor:default}
+textarea{resize:vertical;min-height:66px}
+
+/* ── KEY METRIC ── */
+.key-metric input{background:#fff8f7;border-color:#f0b8b0;color:var(--red);font-weight:600}
+.key-metric input:focus{border-color:var(--red);box-shadow:0 0 0 3px #f0b8b022}
+.key-metric label{color:var(--red);font-weight:600}
+.key-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red)}
+.key-metric input[readonly]{background:#fde8e5;border-color:#f0b8b0;color:var(--red);font-weight:600}
+
+/* ── DATE HEADER ── */
+.date-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.date-display{font-family:'DM Serif Display',serif;font-size:26px;color:var(--sage-dark)}
+.date-sub{font-size:12px;color:var(--gray);margin-top:2px}
+.prev-hint{font-size:11px;color:var(--sage);background:#edf5ee;border-radius:6px;padding:2px 8px;display:inline-block;margin-top:5px}
+
+/* ── EXERCISE TABS ── */
+.ex-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.ex-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:13px;color:var(--gray);cursor:pointer;transition:all .2s}
+.ex-tab.active{border-color:var(--sage);background:var(--sage);color:#fff}
+.ex-panel{display:none}.ex-panel.active{display:block}
+.ex-title{font-size:13px;font-weight:600;color:var(--sage-dark);margin-bottom:10px}
+.ex-totals{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--gray)}
+
+/* ── MEALS ── */
+.meals-cont{display:flex;flex-direction:column;gap:10px}
+.meal-card{background:var(--cream);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.meal-hd{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--warm-white);cursor:pointer;user-select:none}
+.meal-title-row{font-weight:600;color:var(--charcoal);display:flex;align-items:center;gap:7px;font-size:14px}
+.meal-chev{color:var(--gray);transition:transform .2s;font-size:18px}
+.meal-card.open .meal-chev{transform:rotate(180deg)}
+.meal-bd{display:none;padding:14px}
+.meal-card.open .meal-bd{display:block}
+
+/* ── PHOTO ── */
+.photo-up{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--warm-white);margin-bottom:10px;position:relative}
+.photo-up:hover{border-color:var(--sage);background:#f0f6f1}
+.photo-up input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:7px;margin-top:8px}
+.photo-wrap{position:relative}
+.photo-img{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer;display:block}
+.photo-rm{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:var(--red);color:#fff;border-radius:50%;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 22px;border-radius:24px;border:none;cursor:pointer;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:14px;font-weight:500;transition:all .2s}
+.btn-primary{background:var(--sage);color:#fff}
+.btn-primary:hover{background:var(--sage-dark);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-sec{background:transparent;color:var(--sage);border:1.5px solid var(--sage)}
+.btn-sec:hover{background:var(--sage);color:#fff}
+.btn-danger{background:transparent;color:var(--red);border:1.5px solid var(--red);font-size:12px;padding:6px 14px}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;justify-content:flex-end}
+.add-meal-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;border:2px dashed var(--border);border-radius:12px;background:transparent;color:var(--gray);cursor:pointer;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:14px;transition:all .2s;margin-top:10px}
+.add-meal-btn:hover{border-color:var(--sage);color:var(--sage);background:#f0f6f1}
+
+/* ── WATER ── */
+.water-cups{display:flex;gap:4px;flex-wrap:wrap}
+.w-cup{width:28px;height:32px;border-radius:4px;border:2px solid var(--blue);background:transparent;cursor:pointer;transition:background .2s}
+.w-cup.filled{background:var(--blue)}
+.water-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+
+/* ════════════════════════════
+   MEAL PLAN CHECKLIST
+════════════════════════════ */
+.plan-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--warm-white);position:relative;margin-bottom:14px}
+.plan-upload-area:hover{border-color:var(--sage);background:#f0f6f1}
+.plan-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.plan-upload-icon{font-size:32px;margin-bottom:6px}
+.plan-upload-text{font-size:13px;color:var(--gray)}
+.plan-upload-text small{display:block;margin-top:4px;font-size:11px;color:#aaa}
+
+.plan-paste-area{width:100%;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--cream);font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:13px;color:var(--charcoal);min-height:100px;resize:vertical;margin-bottom:10px}
+.plan-paste-area:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 3px var(--ring)}
+.plan-parse-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+
+.meal-plan-slots{display:flex;flex-direction:column;gap:10px}
+.slot-card{background:var(--warm-white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.slot-hd{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none}
+.slot-hd-left{display:flex;align-items:center;gap:8px}
+.slot-icon{font-size:18px}
+.slot-name{font-weight:600;font-size:14px;color:var(--charcoal)}
+.slot-progress{font-size:11px;color:var(--gray);background:var(--cream);border-radius:8px;padding:2px 8px}
+.slot-chev{color:var(--gray);transition:transform .2s;font-size:18px}
+.slot-card.open .slot-chev{transform:rotate(180deg)}
+.slot-bd{display:none;padding:10px 14px 14px}
+.slot-card.open .slot-bd{display:block}
+.slot-items{display:flex;flex-direction:column;gap:6px}
+.checklist-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;background:var(--cream);border:1px solid var(--border);cursor:pointer;transition:all .2s;user-select:none}
+.checklist-item:hover{border-color:var(--sage-light)}
+.checklist-item.done{background:#f0f6f1;border-color:#c5ddc8;opacity:.65}
+.ci-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:13px;background:#fff}
+.checklist-item.done .ci-check{background:var(--sage);border-color:var(--sage);color:#fff}
+.ci-text{flex:1;font-size:13px;color:var(--charcoal);line-height:1.4}
+.checklist-item.done .ci-text{text-decoration:line-through;color:var(--gray)}
+.ci-del{background:none;border:none;color:var(--gray);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;flex-shrink:0;transition:color .2s}
+.ci-del:hover{color:var(--red)}
+.ci-drag{display:flex;align-items:center;color:#bbb;cursor:grab;padding:2px 5px 2px 0;flex-shrink:0;font-size:15px;touch-action:none;user-select:none}
+.ci-drag:active{cursor:grabbing;color:var(--sage)}
+.checklist-item.dragging{opacity:.3;border:2px dashed var(--sage)}
+.checklist-item.drag-over-top{border-top:3px solid var(--sage)!important}
+.checklist-item.drag-over-bot{border-bottom:3px solid var(--sage)!important}
+.slot-items.drag-over-empty{outline:2px dashed var(--sage);border-radius:9px;min-height:38px;background:var(--sage-light)}
+.ci-drag:active{cursor:grabbing}
+.checklist-item.dragging{opacity:.35;border-style:dashed}
+.checklist-item.drag-over{border-color:var(--sage);background:#edf6ee;transform:scale(1.01)}
+.checklist-item.dragging{opacity:.35;border:2px dashed var(--sage);background:var(--sage-light)}
+.slot-add-row{margin-top:8px;display:flex;gap:6px}
+.slot-add-input{flex:1;padding:8px 11px;border:1px dashed var(--border);border-radius:8px;background:transparent;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:13px}
+.slot-add-input:focus{outline:none;border-color:var(--sage);background:var(--cream)}
+.slot-add-btn{padding:8px 14px;border-radius:8px;border:none;background:var(--sage-light);color:var(--sage-dark);cursor:pointer;font-size:13px;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;transition:all .2s}
+.slot-add-btn:hover{background:var(--sage);color:#fff}
+.no-plan-hint{text-align:center;padding:28px 20px;color:var(--gray);font-size:13px}
+.remind-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.remind-row:last-child{border-bottom:none}
+.remind-time-input{width:90px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;background:var(--cream);text-align:center}
+.remind-toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.remind-toggle input{opacity:0;width:0;height:0}
+.remind-slider{position:absolute;inset:0;background:#d1d5db;border-radius:11px;cursor:pointer;transition:.2s}
+.remind-slider:before{content:'';position:absolute;width:18px;height:18px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s}
+.remind-toggle input:checked+.remind-slider{background:var(--sage)}
+.remind-toggle input:checked+.remind-slider:before{transform:translateX(18px)}
+.no-plan-hint .icon{font-size:36px;margin-bottom:8px}
+/* ── NOTES ── */
+.notes-list{display:flex;flex-direction:column;gap:7px}
+.note-item{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;background:var(--cream);border-radius:9px;border-left:3px solid var(--amber)}
+.note-bullet{color:var(--amber);font-size:16px;flex-shrink:0;line-height:1.5}
+.note-text{font-size:13px;color:var(--charcoal);line-height:1.6;flex:1}
+.notes-empty{text-align:center;padding:20px;color:var(--gray);font-size:13px}
+
+/* ── HISTORY ── */
+.history-list{display:flex;flex-direction:column;gap:10px}
+.history-item{background:var(--warm-white);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .2s}
+.history-item:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.history-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer}
+.history-date{font-family:'DM Serif Display',serif;font-size:18px;color:var(--sage-dark)}
+.history-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.h-badge{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:3px 9px;font-size:11px;color:var(--charcoal);display:inline-flex;align-items:center;gap:3px}
+.h-badge.key{background:var(--red-light);border-color:#f0b8b0;color:var(--red);font-weight:600}
+.h-badge-lbl{font-size:10px;color:var(--gray);font-weight:400;margin-right:1px;opacity:.8}
+.h-badge.key .h-badge-lbl{color:#e08878;font-weight:500}
+.trend-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:1px 5px;border-radius:5px;margin-left:3px}
+.t-up{background:var(--red-bg);color:var(--red)}
+.t-dn{background:var(--green-bg);color:var(--green)}
+.t-up-g{background:var(--green-bg);color:var(--green)}
+.t-dn-b{background:var(--red-bg);color:var(--red)}
+.history-bd{display:none;padding:0 16px 16px}
+.history-item.open .history-bd{display:block}
+.history-item.open .meal-chev{transform:rotate(180deg)}
+.history-item.open .slot-chev{transform:rotate(180deg)}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:12px}
+.s-box{background:var(--cream);border-radius:9px;padding:9px 11px;border:1px solid var(--border)}
+.s-box.key{background:var(--red-light);border-color:#f0b8b0}
+.s-box.key .s-label,.s-box.key .s-val{color:var(--red)}
+.s-label{font-size:11px;color:var(--gray)}
+.s-val{font-size:15px;font-weight:600;color:var(--charcoal);margin-top:2px}
+.s-unit{font-size:11px;color:var(--gray)}
+.h-section-title{font-size:13px;font-weight:600;color:var(--sage-dark);margin:12px 0 7px}
+.h-meals{display:flex;flex-direction:column;gap:7px}
+.h-meal{border-left:3px solid var(--sage-light);padding:7px 11px;background:var(--cream);border-radius:0 8px 8px 0}
+.h-meal-name{font-size:13px;font-weight:600;color:var(--sage-dark)}
+.h-meal-desc{font-size:12px;color:var(--gray);margin-top:3px}
+.h-photos{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.h-photos img{width:56px;height:56px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+.ex-hist-block{background:var(--cream);border-radius:9px;padding:9px 11px;border:1px solid var(--border);font-size:12px}
+.ex-hist-name{font-weight:600;color:var(--sage-dark);margin-bottom:3px;font-size:13px}
+
+/* ── WEEK GROUP ── */
+.week-group{margin-bottom:22px}
+.week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.week-label{font-family:'DM Serif Display',serif;font-size:15px;color:var(--sage-dark);display:flex;align-items:center;gap:8px}
+.week-num{background:var(--sage);color:#fff;border-radius:6px;padding:2px 9px;font-size:12px;font-family:'PingFang SC','Microsoft YaHei',sans-serif,sans-serif}
+.week-phase-wrap{display:flex;align-items:center;gap:6px}
+.week-phase-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;border:1.5px solid var(--sage-light);background:var(--warm-white);font-size:12px;font-weight:600;color:var(--sage-dark);cursor:pointer;transition:all .2s;white-space:nowrap}
+.week-phase-tag:hover{background:var(--sage-light)}
+.week-phase-tag .edit-icon{font-size:11px;opacity:.6}
+.week-phase-input{padding:4px 10px;border-radius:20px;border:1.5px solid var(--sage);background:var(--warm-white);font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:12px;color:var(--sage-dark);font-weight:600;width:120px;outline:none}
+.week-range{font-size:11px;color:var(--gray)}
+.week-body{border:2px solid var(--border);border-radius:16px;overflow:hidden;background:var(--warm-white)}
+.week-body .history-item{border:none;border-bottom:1px solid var(--border);border-radius:0;animation:none}
+.week-body .history-item:last-child{border-bottom:none}
+.week-body .history-item:hover{box-shadow:none;background:#fafaf8}
+
+/* ── DAY PHASE LABEL ── */
+.phase-label-card{background:var(--warm-white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.phase-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phase-preset-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.phase-chip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--cream);font-size:12px;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;color:var(--gray);cursor:pointer;transition:all .2s}
+.phase-chip:hover{border-color:var(--sage-light);color:var(--sage-dark)}
+.phase-chip.active{border-color:var(--sage);background:var(--sage);color:#fff}
+
+/* ── SYNC BAR ── */
+.sync-bar{display:none;align-items:center;gap:6px;font-size:11px;color:var(--gray);padding:5px 11px;background:var(--cream);border-radius:8px;margin-bottom:12px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#ccc}
+.sync-dot.syncing{background:var(--amber);animation:pulse .8s infinite}
+.sync-dot.synced{background:var(--green)}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── AUTH OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.overlay.hidden{display:none}
+.auth-box{background:var(--warm-white);border-radius:20px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.auth-logo{text-align:center;font-family:'DM Serif Display',serif;font-size:22px;color:var(--sage-dark);margin-bottom:4px}
+.auth-sub{text-align:center;font-size:13px;color:var(--gray);margin-bottom:20px}
+.auth-tabs{display:flex;background:var(--cream);border-radius:10px;padding:3px;margin-bottom:18px}
+.auth-tab{flex:1;padding:7px;text-align:center;border-radius:8px;border:none;background:transparent;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;font-size:13px;color:var(--gray);cursor:pointer;transition:all .2s}
+.auth-tab.active{background:var(--warm-white);color:var(--sage-dark);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.auth-form{display:flex;flex-direction:column;gap:10px}
+.auth-msg{font-size:12px;text-align:center;padding:8px;border-radius:8px}
+.auth-msg.err{background:var(--red-bg);color:var(--red)}
+.auth-msg.ok{background:var(--green-bg);color:var(--green)}
+.auth-footer{text-align:center;font-size:12px;color:var(--gray);margin-top:10px}
+.local-btn{background:none;border:none;color:var(--sage);text-decoration:underline;cursor:pointer;font-size:12px;font-family:'PingFang SC','Microsoft YaHei',sans-serif,sans-serif}
+
+/* ── TOAST & IMG MODAL ── */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 76px);left:50%;transform:translateX(-50%) translateY(0);background:var(--sage-dark);color:#fff;padding:13px 26px;border-radius:28px;font-size:15px;font-weight:500;z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;box-shadow:0 6px 28px rgba(0,0,0,.28);max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.img-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.img-modal.show{display:flex}
+.img-modal img{max-width:100%;max-height:88vh;border-radius:8px}
+.empty-state{text-align:center;padding:44px 20px;color:var(--gray)}
+.empty-state-icon{font-size:44px;margin-bottom:10px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .nav-tabs{display:none}
+  .bottom-nav{display:block}
+  .container{padding-bottom:calc(env(safe-area-inset-bottom) + 80px)}
+  .toast{bottom:calc(env(safe-area-inset-bottom) + 82px)}
+  .logo-text{display:none}
+  .date-display{font-size:22px}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .det-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:420px){
+  .form-grid{grid-template-columns:1fr}
+  .btn-row .btn{flex:1;text-align:center}
+  .history-badges{gap:4px}
+}
+@media(min-width:769px) and (max-width:1024px){
+  .form-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card,.meal-card,.history-item,.slot-card{animation:slideUp .25s ease both}
+</style>
+</head>
+<body>
+
+<!-- AUTH OVERLAY -->
+<div class="overlay hidden" id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">🌿 极致健康</div>
+    <div class="auth-sub">登录后数据自动多设备同步</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login',this)">登录</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register',this)">注册</button>
+    </div>
+    <!-- LOGIN -->
+    <div id="auth-login" class="auth-form">
+      <input type="email" id="login-email" placeholder="邮箱地址" autocomplete="email"
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="login-pwd" placeholder="密码" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn btn-primary" style="width:100%" onclick="doLogin()" id="login-btn">登录</button>
+      <div id="login-msg" class="auth-msg" style="display:none"></div>
+    </div>
+    <!-- REGISTER -->
+    <div id="auth-register" class="auth-form" style="display:none">
+      <input type="text" id="reg-name" placeholder="您的名字">
+      <input type="email" id="reg-email" placeholder="邮箱地址" autocomplete="email">
+      <input type="password" id="reg-pwd" placeholder="密码（至少6位）" autocomplete="new-password"
+        onkeydown="if(event.key==='Enter')doRegister()">
+      <button class="btn btn-primary" style="width:100%" onclick="doRegister()" id="reg-btn">注册</button>
+      <div id="reg-msg" class="auth-msg" style="display:none"></div>
+    </div>
+    <div class="auth-footer">
+      <button class="local-btn" onclick="useLocalMode()">暂时使用本地模式</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMG MODAL -->
+<div class="img-modal" id="img-modal" onclick="this.classList.remove('show')">
+  <img id="modal-img" src="" alt="">
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- TOP NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo"><span>🌿</span><span class="logo-text">极致健康</span></div>
+    <div class="nav-right">
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showPage('today',this)">今日</button>
+        <button class="nav-tab" onclick="showPage('plan',this)">餐单</button>
+        <button class="nav-tab" onclick="showPage('history',this)">历史</button>
+        <button class="nav-tab" onclick="showPage('profile',this)">档案</button>
+      </div>
+      <div class="user-chip" id="user-chip" onclick="showUserMenu()">
+        <div class="u-dot off" id="u-dot"></div>
+        <span id="user-label">未登录</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-btn active" id="bn-today" onclick="showPage('today',null,'today')">
+      <span class="bi">📋</span>今日
+    </button>
+    <button class="bnav-btn" id="bn-plan" onclick="showPage('plan',null,'plan')">
+      <span class="bi">🥗</span>餐单
+    </button>
+    <button class="bnav-btn" id="bn-history" onclick="showPage('history',null,'history')">
+      <span class="bi">📅</span>历史
+    </button>
+    <button class="bnav-btn" id="bn-profile" onclick="showPage('profile',null,'profile')">
+      <span class="bi">👤</span>档案
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════ TODAY ══════════ -->
+<div class="page active" id="page-today">
+  <div class="date-header">
+    <div>
+      <div class="date-display" id="today-display"></div>
+      <div class="date-sub">今日健康记录</div>
+      <div class="prev-hint" id="prev-hint" style="display:none">📋 已从前日数据填充，可直接修改</div>
+    </div>
+    <div class="sync-bar" id="sync-bar">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">本地</span>
+      <button onclick="testCloudSave()" style="margin-left:6px;font-size:10px;padding:2px 7px;background:#6b7280;color:#fff;border:none;border-radius:5px;cursor:pointer" title="测试云端连接">🔧测试</button>
+    </div>
+  </div>
+
+  <!-- KEY METRICS -->
+  <div class="card">
+    <div class="card-title">⚠️ 重点关注指标</div>
+    <div class="form-grid">
+      <div class="form-group key-metric">
+        <label><span class="key-dot"></span> 体重 (kg)</label>
+        <input type="number" id="f-weight" step="0.1" placeholder="如：58.5" oninput="calcDerived()">
+      </div>
+      <div class="form-group key-metric">
+        <label><span class="key-dot"></span> BMI <span style="font-size:10px;font-weight:400">自动</span></label>
+        <input type="number" id="f-bmi" readonly placeholder="需先设置身高">
+      </div>
+      <div class="form-group key-metric">
+        <label><span class="key-dot"></span> 体脂率 (%)</label>
+        <input type="number" id="f-body-fat-pct" step="0.1" placeholder="如：25.0" oninput="calcFatMass()">
+      </div>
+      <div class="form-group key-metric">
+        <label><span class="key-dot"></span> 脂肪量 (kg) <span style="font-size:10px;font-weight:400">自动</span></label>
+        <input type="number" id="f-fat-mass" readonly placeholder="自动计算">
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY DATA -->
+  <div class="card">
+    <div class="card-title">身体数据</div>
+    <div class="form-grid">
+      <div class="form-group"><label>脂肪% (设备)</label><input type="number" id="f-fat" step="0.1" placeholder="如：22.0"></div>
+      <div class="form-group"><label>水分 (%)</label><input type="number" id="f-water" step="0.1" placeholder="如：55.0"></div>
+      <div class="form-group"><label>肌肉 (%)</label><input type="number" id="f-muscle" step="0.1" placeholder="如：42.0"></div>
+      <div class="form-group"><label>体龄</label><input type="number" id="f-body-age" placeholder="如：28"></div>
+      <div class="form-group"><label>内脂</label><input type="number" id="f-visceral" step="0.1" placeholder="如：5"></div>
+      <div class="form-group"><label>基础代谢 (kcal)</label><input type="number" id="f-bmr" placeholder="如：1400"></div>
+      <div class="form-group"><label>腰围 (cm)</label><input type="number" id="f-waist-cm" step="0.1" placeholder="如：75" oninput="calcWHR()"></div>
+      <div class="form-group"><label>臀围 (cm)</label><input type="number" id="f-hip-cm" step="0.1" placeholder="如：95" oninput="calcWHR()"></div>
+      <div class="form-group"><label>腰臀比 <span style="font-size:10px;color:var(--sage)">自动</span></label><input type="number" id="f-whr" readonly placeholder="自动"></div>
+    </div>
+  </div>
+
+  <!-- EXERCISE -->
+  <div class="card">
+    <div class="card-title">运动记录</div>
+    <div class="ex-tabs">
+      <button class="ex-tab active" onclick="switchExTab('morning',this)">🌅 上午</button>
+      <button class="ex-tab" onclick="switchExTab('noon',this)">☀️ 中午</button>
+      <button class="ex-tab" onclick="switchExTab('evening',this)">🌆 下午</button>
+    </div>
+    <div class="ex-panel active" id="ex-morning">
+      <div class="ex-title">🌅 上午运动</div>
+      <div class="form-grid">
+        <div class="form-group"><label>运动类型</label><input type="text" id="ex-morning-type" placeholder="如：跑步"></div>
+        <div class="form-group"><label>步数</label><input type="number" id="ex-morning-steps" placeholder="如：4000" oninput="updateExTotals()"></div>
+        <div class="form-group"><label>时长 (分钟)</label><input type="number" id="ex-morning-min" placeholder="如：30" oninput="updateExTotals()"></div>
+        <div class="form-group"><label>消耗 (kcal)</label><input type="number" id="ex-morning-kcal" placeholder="如：200" oninput="updateExTotals()"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>备注</label><input type="text" id="ex-morning-note" placeholder="感受、强度…"></div>
+      </div>
+    </div>
+    <div class="ex-panel" id="ex-noon">
+      <div class="ex-title">☀️ 中午运动</div>
+      <div class="form-grid">
+        <div class="form-group"><label>运动类型</label><input type="text" id="ex-noon-type" placeholder="如：散步"></div>
+        <div class="form-group"><label>步数</label><input type="number" id="ex-noon-steps" placeholder="如：2000" oninput="updateExTotals()"></div>
+        <div class="form-group"><label>时长 (分钟)</label><input type="number" id="ex-noon-min" placeholder="如：20" oninput="updateExTotals()"></div>
+        <div class="form-group"><label>消耗 (kcal)</label><input type="number" id="ex-noon-kcal" placeholder="如：100" oninput="updateExTotals()"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>备注</label><input type="text" id="ex-noon-note" placeholder="感受、强度…"></div>
+      </div>
+    </div>
+    <div class="ex-panel" id="ex-evening">
+      <div class="ex-title">🌆 下午运动</div>
+      <div class="form-grid">
+        <div class="form-group"><label>运动类型</label><input type="text" id="ex-evening-type" placeholder="如：健身"></div>
+        <div class="form-group"><label>步数</label><input type="number" id="ex-evening-steps" placeholder="如：2000" oninput="updateExTotals()"></div>
+        <div class="form-group"><label>时长 (分钟)</label><input type="number" id="ex-evening-min" placeholder="如：60" oninput="updateExTotals()"></div>
+        <div class="form-group"><label>消耗 (kcal)</label><input type="number" id="ex-evening-kcal" placeholder="如：400" oninput="updateExTotals()"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>备注</label><input type="text" id="ex-evening-note" placeholder="感受、强度…"></div>
+      </div>
+    </div>
+    <div class="ex-totals">
+      <span>全天合计：</span>
+      <span>🦶 <strong id="total-steps">0</strong> 步</span>
+      <span>⏱ <strong id="total-min">0</strong> 分钟</span>
+      <span>🔥 <strong id="total-kcal">0</strong> kcal</span>
+    </div>
+  </div>
+
+  <!-- WATER -->
+  <div class="card">
+    <div class="card-title">饮水记录</div>
+    <div class="water-row">
+      <div class="water-cups" id="water-cups"></div>
+      <span style="font-size:12px;color:var(--gray)"><span id="water-count">0</span>/8 杯</span>
+    </div>
+    <input type="number" id="f-water-ml" placeholder="或直接输入毫升数" style="max-width:200px">
+  </div>
+
+  <!-- MEALS -->
+  <div class="card">
+    <div class="card-title">餐食记录</div>
+    <div class="meals-cont" id="meals-cont"></div>
+    <button class="add-meal-btn" onclick="addMeal()">＋ 添加餐次</button>
+  </div>
+
+  <!-- DAY PHASE -->
+  <div class="phase-label-card">
+    <div class="card-title" style="margin-bottom:10px">📌 今日阶段标签</div>
+    <div class="phase-row">
+      <input type="text" id="f-phase" placeholder="输入或选择标签，如：准备日" style="flex:1;max-width:220px">
+    </div>
+    <div class="phase-preset-list" id="phase-presets"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-sec" onclick="clearToday()">清空今日</button>
+    <button class="btn btn-primary" id="save-btn" onclick="saveToday()">💾 保存记录</button>
+  </div>
+  <div id="cloud-error-panel" style="display:none;margin-top:8px;padding:9px 12px;background:#fff0f0;border:1px solid #f87171;border-radius:8px;font-size:12px;color:#b91c1c;line-height:1.6;word-break:break-all">
+    <strong>☁️ 云端上传失败</strong><br>
+    <span id="cloud-error-msg"></span><br>
+    <span style="color:#6b7280;font-size:11px">本地数据已保存，可点「🔄 刷新数据」重新同步</span>
+  </div>
+</div>
+
+<!-- ══════════ MEAL PLAN ══════════ -->
+<div class="page" id="page-plan">
+  <div class="date-header">
+    <div>
+      <div class="date-display">每日餐单</div>
+      <div class="date-sub">上传或粘贴餐单，生成每日打卡清单</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-sec" style="font-size:13px;padding:7px 16px" onclick="showPlanEditor()">✏️ 编辑餐单</button>
+      <button class="btn btn-danger" style="padding:7px 14px" onclick="resetTodayChecks()">重置今日</button>
+    </div>
+  </div>
+
+  <!-- EDITOR (hidden by default) -->
+  <div class="card" id="plan-editor" style="display:none">
+    <div class="card-title">上传 / 粘贴餐单</div>
+    <div class="plan-upload-area" id="plan-upload-area">
+      <input type="file" accept=".txt,.csv,image/*" onchange="handlePlanFile(event)">
+      <div class="plan-upload-icon">📄</div>
+      <div class="plan-upload-text">点击上传餐单文件（txt / csv）
+        <small>也可直接在下方粘贴文字内容</small>
+      </div>
+    </div>
+    <textarea class="plan-paste-area" id="plan-paste" placeholder="在此粘贴或输入您的餐单内容，每行一个食物项目。
+可以在每行前加上餐段标识：
+  早餐: 燕麦粥、鸡蛋
+  上午加餐: 苹果
+  中餐: 米饭、鱼、蔬菜
+  下午加餐: 坚果
+  晚餐: 鸡胸肉、沙拉
+
+也可以直接每行写食物名称，系统会自动分配到餐段。"></textarea>
+    <div class="plan-parse-row">
+      <button class="btn btn-primary" onclick="parsePlan()">✅ 生成餐单</button>
+      <button class="btn btn-sec" onclick="hidePlanEditor()">取消</button>
+    </div>
+  </div>
+
+  <!-- CHECKLIST SLOTS -->
+  <div id="plan-checklist-area">
+    <div class="no-plan-hint" id="no-plan-hint">
+      <div class="icon">🥗</div>
+      <p>还没有餐单<br>点击右上角「编辑餐单」上传或粘贴您的餐单</p>
+    </div>
+    <div class="meal-plan-slots" id="plan-slots"></div>
+  </div>
+
+  <!-- MEAL REMINDERS -->
+  <div class="card" style="margin-top:6px" id="remind-card">
+    <div class="card-title" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:8px">
+        <span style="width:3px;height:16px;background:var(--sage);border-radius:2px;flex-shrink:0;display:inline-block"></span>
+        🔔 用餐提醒
+      </span>
+      <button id="remind-enable-btn" onclick="toggleReminders()" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:var(--cream);cursor:pointer;color:var(--charcoal)">开启提醒</button>
+    </div>
+    <div id="remind-body" style="display:none;margin-top:4px">
+      <div style="font-size:12px;color:var(--gray);margin-bottom:10px">到点弹出醒目提示框 + 播放提示音，Safari / 微信均支持 📱</div>
+      <div id="remind-rows"></div>
+    </div>
+  </div>
+
+  <!-- DIET NOTES -->
+  <div class="card" style="margin-top:6px" id="notes-card">
+    <div class="card-title" style="margin-bottom:10px;justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:3px;height:16px;background:var(--amber);border-radius:2px;flex-shrink:0;display:inline-block"></span>⚠️ 饮食注意事项</span>
+      <button class="btn btn-sec" style="font-size:12px;padding:5px 12px" onclick="toggleNotesEditor()">✏️ 编辑</button>
+    </div>
+    <!-- Editor (hidden) -->
+    <div id="notes-editor" style="display:none;margin-bottom:12px">
+      <div class="plan-upload-area" style="margin-bottom:10px">
+        <input type="file" accept=".txt" onchange="handleNotesFile(event)">
+        <div class="plan-upload-icon" style="font-size:24px">📋</div>
+        <div class="plan-upload-text">点击上传 txt 文件
+          <small>或在下方直接粘贴文字</small>
+        </div>
+      </div>
+      <textarea class="plan-paste-area" id="notes-paste" placeholder="在此输入或粘贴注意事项，每行一条…
+例如：
+• 每餐七分饱，细嚼慢咽
+• 睡前2小时不进食
+• 多喝水，每日至少1500ml" style="min-height:120px"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" style="font-size:13px;padding:7px 18px" onclick="saveNotes()">保存注意事项</button>
+        <button class="btn btn-sec" style="font-size:13px;padding:7px 14px" onclick="toggleNotesEditor()">取消</button>
+      </div>
+    </div>
+    <!-- Display -->
+    <div id="notes-display"></div>
+  </div>
+</div>
+
+<!-- ══════════ HISTORY ══════════ -->
+<div class="page" id="page-history">
+  <div class="date-header">
+    <div>
+      <div class="date-display">历史记录</div>
+      <div class="date-sub">
+        <span style="color:var(--red)">↑红</span> 上升 &nbsp;
+        <span style="color:var(--green)">↓绿</span> 下降好转
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn" style="padding:7px 16px;font-size:13px;display:flex;align-items:center;gap:5px;background:var(--sage);color:#fff;border:none;border-radius:10px" onclick="saveHistoryToCloud()" id="save-history-btn">
+        <span id="save-history-icon">☁️</span> 保存到云端
+      </button>
+      <button class="btn btn-primary" style="padding:7px 16px;font-size:13px;display:flex;align-items:center;gap:5px" onclick="pullCloudHistory()" id="refresh-btn">
+        <span id="refresh-icon">🔄</span> 刷新数据
+      </button>
+      <input type="month" id="filter-month" style="max-width:130px;padding:6px 10px" onchange="renderHistory()">
+    </div>
+  </div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- ══════════ PROFILE ══════════ -->
+<div class="page" id="page-profile">
+  <div class="date-header">
+    <div><div class="date-display">个人档案</div><div class="date-sub">基本信息与目标</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">账号信息</div>
+    <div id="account-info" style="font-size:13px;color:var(--gray)">
+      未登录 — <button class="local-btn" style="font-size:13px" onclick="showAuth()">点击登录 / 注册</button>
+    </div>
+    <div id="account-btns" style="margin-top:12px;display:none;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-danger" style="padding:7px 14px" onclick="doLogout()">退出登录</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">基本信息</div>
+    <div class="form-grid">
+      <div class="form-group"><label>姓名</label><input type="text" id="p-name" placeholder="您的名字"></div>
+      <div class="form-group"><label>性别</label><select id="p-gender"><option value="女">女</option><option value="男">男</option></select></div>
+      <div class="form-group"><label>年龄</label><input type="number" id="p-age" placeholder="如：30"></div>
+      <div class="form-group"><label>身高 (cm)</label><input type="number" id="p-height" placeholder="如：165" oninput="calcDerived()"></div>
+      <div class="form-group"><label>原始体重 (kg)</label><input type="number" id="p-origin-weight" step="0.1" placeholder="如：65.0"></div>
+      <div class="form-group"><label>腰围 (cm)</label><input type="number" id="p-waist" step="0.1" placeholder="如：75"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">目标设定</div>
+    <div class="form-grid">
+      <div class="form-group"><label>目标体重 (kg)</label><input type="number" id="p-target-weight" step="0.1" placeholder="如：55.0"></div>
+      <div class="form-group"><label>目标体脂率 (%)</label><input type="number" id="p-target-fat" step="0.1" placeholder="如：20.0"></div>
+      <div class="form-group"><label>类型</label><select id="p-type"><option value="常规">常规</option><option value="大餐案">大餐案</option><option value="减脂">减脂</option><option value="增肌">增肌</option></select></div>
+      <div class="form-group"><label>健管顾问</label><input type="text" id="p-advisor" placeholder="顾问姓名"></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="saveProfile()">保存档案</button>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const _SB_URL  = atob('aHR0cHM6Ly9rcmR3Z2hsdnZra25qZHpzY3pqbC5zdXBhYmFzZS5jbw==');
+const _SB_KEY  = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW10eVpIZG5hR3gyZG10cmJtcGtlbk5qZW1wc0lpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpNd016STBORFVzSW1WNGNDSTZNakE0T0RZd09EUTBOWDAuR1Eyem1ZTUItdWZmZUtBa2RnaGptVncyM0R6aHNaVk5tTWtzNG5OUDR1RQ==');
+const TBL_REC  = 'health_records_claude';
+const TBL_PRO  = 'health_profiles_claude';
+const SB_OK    = true;
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let meals=[], waterCups=0, mealCounter=0;
+let historyData = JSON.parse(localStorage.getItem('hh_v2')||'[]');
+let profile     = JSON.parse(localStorage.getItem('hp_v2')||'{}');
+let currentUser = null;
+// Meal plan state: { slots: [{id, name, icon, items:[{id,text,done}]}] }
+let mealPlan    = JSON.parse(localStorage.getItem('hmp_v2')||'null');
+// Today's checks: { date, checks: {itemId: bool} }
+let todayChecks = JSON.parse(localStorage.getItem('htc_v2')||'null');
+
+const MEAL_PRESETS=['早餐','午餐','晚餐'];
+const MEAL_ICONS={'早餐':'🌅','午餐':'☀️','晚餐':'🌙','加餐':'🍎'};
+const EX_SESS=['morning','noon','evening'];
+const EX_FLD=['type','steps','min','kcal','note'];
+const PLAN_SLOTS=[
+  {id:'breakfast', name:'早餐',       icon:'🌅'},
+  {id:'morning',   name:'上午加餐',   icon:'🍎'},
+  {id:'lunch',     name:'中餐',       icon:'☀️'},
+  {id:'afternoon', name:'下午加餐',   icon:'🍵'},
+  {id:'dinner',    name:'晚餐',       icon:'🌙'},
+];
+const SLOT_KEYWORDS={
+  breakfast:['早餐','早上','早'],
+  morning:['上午加餐','上午','加餐1','上加'],
+  lunch:['中餐','午餐','午','中午'],
+  afternoon:['下午加餐','下午','加餐2','下加','下午茶'],
+  dinner:['晚餐','晚上','晚'],
+};
+const BODY_FIELDS={weight:'f-weight',fat:'f-fat',water:'f-water',muscle:'f-muscle',bodyAge:'f-body-age',visceral:'f-visceral',bmr:'f-bmr',bodyFatPct:'f-body-fat-pct',waistCm:'f-waist-cm',hipCm:'f-hip-cm',waterMl:'f-water-ml'};
+
+// ══════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════
+async function sbFetch(path,opts={},_retry=true){
+  try{
+    const token = currentUser?.access_token || _SB_KEY;
+    const headers = {
+      'apikey': _SB_KEY,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+    };
+    if(opts.prefer) headers['Prefer'] = opts.prefer;
+    const res=await fetch(_SB_URL+path,{
+      method:opts.method||'GET',
+      headers,
+      body:opts.body?JSON.stringify(opts.body):undefined
+    });
+    // Token 过期：自动刷新后重试一次
+    if(res.status===401 && _retry && currentUser?.refresh_token){
+      const refreshed = await tryRefreshToken(currentUser.refresh_token);
+      if(refreshed && refreshed.access_token){
+        currentUser = {...currentUser, ...refreshed};
+        localStorage.setItem('h_auth', JSON.stringify({
+          access_token:  refreshed.access_token,
+          refresh_token: refreshed.refresh_token || currentUser.refresh_token,
+          user:          refreshed.user || currentUser.user
+        }));
+        return sbFetch(path, opts, false);
+      }
+      setSyncStatus('error','登录已过期');
+      showToast('⚠️ 登录已过期，请重新登录');
+      return null;
+    }
+    if(!res.ok){
+      const errText = await res.text();
+      console.error('SB error', res.status, path, errText);
+      let hint = '';
+      try{ const j=JSON.parse(errText); hint=j.message||j.error_description||j.error||''; }catch(e){}
+      const errLabel = res.status+(hint?' — '+hint:'');
+      setSyncStatus('error','错误:'+errLabel);
+      if(res.status!==401){
+        showToast('⚠️ 云端错误 '+errLabel, 6000);
+        const ep=document.getElementById('cloud-error-panel');
+        const em=document.getElementById('cloud-error-msg');
+        if(ep&&em){ em.textContent='HTTP '+errLabel+' | 路径: '+path.split('?')[0]; ep.style.display='block'; }
+      }
+      return null;
+    }
+    // 204 = no content (success); 200/201 with empty body (upsert return=minimal) = also success
+    if(res.status===204||res.status===201) return true;
+    const text = await res.text();
+    if(!text||!text.trim()) return true;  // 200 + empty body = success (return=minimal)
+    try{ return JSON.parse(text); }catch(e){ return true; }  // non-empty body, parse or treat as success
+  }catch(e){console.error('SB fetch error',e);return null;}
+}
+async function sbSignUp(email,pwd,name){
+  const r=await fetch(_SB_URL+'/auth/v1/signup',{
+    method:'POST',
+    headers:{'apikey':_SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email, password:pwd, data:{name}, options:{emailRedirectTo:window.location.href}})
+  });
+  return r.json();
+}
+async function sbSignIn(email,pwd){
+  const r=await fetch(_SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':_SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password:pwd})});
+  return r.json();
+}
+async function sbSignOut(){
+  if(!currentUser)return;
+  await fetch(_SB_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':_SB_KEY,'Authorization':'Bearer '+currentUser.access_token}}).catch(()=>{});
+}
+
+// ══════════════════════════════════════════
+// SYNC
+// ══════════════════════════════════════════
+function setSyncStatus(state,text){
+  const bar=document.getElementById('sync-bar');
+  const dot=document.getElementById('sync-dot');
+  const txt=document.getElementById('sync-text');
+  bar.style.display='flex';
+  dot.className='sync-dot '+state;
+  txt.textContent=text;
+}
+// 诊断工具：测试云端连接并显示具体错误
+async function testCloudSave(){
+  if(!currentUser){ showToast('❌ 未登录，无法测试云端', 3000); return; }
+  const ep=document.getElementById('cloud-error-panel');
+  const em=document.getElementById('cloud-error-msg');
+  if(ep) ep.style.display='none';
+  showToast('🔧 测试中…', 8000);
+  try{
+    // Test 1: read
+    const rows = await sbFetch('/rest/v1/'+TBL_REC+'?user_id=eq.'+currentUser.user.id+'&limit=1');
+    if(rows===null){ return; } // sbFetch already showed error in panel
+    // Test 2: write with raw response for diagnosis
+    const testDate = todayKey();
+    const uid = currentUser.user.id;
+    const token = currentUser.access_token;
+    const url = _SB_URL+'/rest/v1/'+TBL_REC+'?on_conflict=user_id,date';
+    const body = {user_id:uid, date:testDate, data:{date:testDate,_test:true,updated_at:new Date().toISOString()}, updated_at:new Date().toISOString()};
+    const res = await fetch(url,{
+      method:'POST',
+      headers:{'apikey':_SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify(body)
+    });
+    const rawText = await res.text();
+    console.log('TEST WRITE response:', res.status, rawText);
+    if(res.ok){
+      showToast('✅ 云端写入成功！HTTP '+res.status, 3000);
+      setSyncStatus('synced','连接正常');
+      if(ep) ep.style.display='none';
+    } else {
+      let hint=''; try{hint=JSON.parse(rawText).message||'';}catch(e){}
+      const msg = 'HTTP '+res.status+(hint?' — '+hint:'')+' | 原始响应：'+rawText.slice(0,200);
+      showToast('❌ 写入失败 HTTP '+res.status+(hint?'：'+hint:''), 6000);
+      setSyncStatus('error','错误:'+res.status);
+    }
+  }catch(e){
+    showToast('❌ 测试异常：'+e.message, 5000);
+    if(ep&&em){ em.textContent='网络异常：'+e.message; ep.style.display='block'; }
+  }
+}
+// 保存单条记录到数据库（带8秒超时，超大照片自动缩减）
+async function pushRecordToCloud(record){
+  if(!currentUser||!SB_OK){ setSyncStatus('','本地已保存'); return false; }
+  const uid = currentUser.user.id;
+  setSyncStatus('syncing','上传中…');
+  try{
+    // 检查上传体积：Supabase row 限制约 1MB JSON，超过则压缩照片到更小尺寸
+    let uploadRecord = record;
+    const jsonSize = JSON.stringify(record).length;
+    if(jsonSize > 800*1024) {  // > 800KB 则重新压缩照片
+      uploadRecord = {...record, meals: await Promise.all((record.meals||[]).map(async m=>{
+        if(!m.photos||!m.photos.length) return m;
+        const smallPhotos = await Promise.all(m.photos.map(async dataUrl=>{
+          try{
+            return await new Promise(resolve=>{
+              const img=new Image(); img.onload=()=>{
+                const canvas=document.createElement('canvas');
+                const max=480; let w=img.width,h=img.height;
+                if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+                canvas.width=w;canvas.height=h;
+                canvas.getContext('2d').drawImage(img,0,0,w,h);
+                resolve(canvas.toDataURL('image/jpeg',0.55));
+              };
+              img.src=dataUrl;
+            });
+          }catch(e){return dataUrl;}
+        }));
+        return {...m, photos:smallPhotos};
+      }))};
+    }
+    const fetchPromise = sbFetch('/rest/v1/'+TBL_REC+'?on_conflict=user_id,date',{
+      method:'POST', prefer:'resolution=merge-duplicates,return=minimal',
+      body:{user_id:uid, date:uploadRecord.date, data:uploadRecord, updated_at:new Date().toISOString()}
+    });
+    const timeoutPromise = new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
+    const r = await Promise.race([fetchPromise, timeoutPromise]);
+    if(r){
+      setSyncStatus('synced','已上传 ✓');
+      return true;
+    } else {
+      setSyncStatus('error','上传失败');
+      console.error('pushRecordToCloud: sbFetch returned null for date', record.date);
+      return false;
+    }
+  }catch(e){
+    const msg = e.message==='timeout' ? '上传超时' : '上传失败';
+    setSyncStatus('error', msg);
+    console.error('pushRecordToCloud error:', e.message, 'date:', record.date);
+    return false;
+  }
+}
+// 保存档案到数据库
+async function pushProfileToCloud(){
+  if(!currentUser||!SB_OK)return;
+  const uid=currentUser.user.id;
+  const payload={...profile};
+  if(mealPlan)payload._mealPlan=mealPlan;
+  if(Object.keys(weekPhases).length)payload._weekPhases=weekPhases;
+  if(dietNotes)payload._notes=dietNotes;
+  if(todayChecks)payload._checks=todayChecks;
+  const now = new Date().toISOString();
+  const res = await sbFetch('/rest/v1/'+TBL_PRO+'?on_conflict=user_id',{
+    method:'POST', prefer:'resolution=merge-duplicates,return=minimal',
+    body:{user_id:uid, data:payload, updated_at:now}
+  });
+  // 记录本地餐单最后推送时间（用于刷新时判断谁更新）
+  if(res !== false) localStorage.setItem('hmp_updated', now);
+}
+// 兼容旧调用
+async function syncToCloud(){ await pushProfileToCloud(); }
+
+// 手动刷新：云端数据与本地合并（云端优先，但不丢弃本地有而云端没有的数据）
+// ── 保存到云端：把本地所有历史数据推送到云端（含删除同步）
+async function saveHistoryToCloud(){
+  if(!currentUser){showToast('请先登录');return;}
+  if(!SB_OK){showToast('云端未启用');return;}
+  const btn=document.getElementById('save-history-btn');
+  const icon=document.getElementById('save-history-icon');
+  btn.disabled=true; icon.textContent='⏳';
+  setSyncStatus('syncing','保存中…');
+  try{
+    // 1. 先获取云端现有的所有日期
+    const uid=currentUser.user.id;
+    const rows=await sbFetch('/rest/v1/'+TBL_REC+'?user_id=eq.'+uid+'&select=date');
+    const cloudDates=new Set((rows||[]).map(r=>r.date).filter(Boolean));
+    const localDates=new Set(historyData.map(r=>r.date));
+
+    // 2. 本地有的全部 upsert（含更新）
+    let ok=true;
+    for(const record of historyData){
+      const res=await pushRecordToCloud(record);
+      if(!res) ok=false;
+    }
+
+    // 3. 云端有但本地没有的 → 说明已被本地删除 → 从云端删除
+    const toDelete=[...cloudDates].filter(d=>!localDates.has(d));
+    for(const dateStr of toDelete){
+      await sbFetch('/rest/v1/'+TBL_REC+'?user_id=eq.'+uid+'&date=eq.'+dateStr,{
+        method:'DELETE', prefer:'return=minimal'
+      });
+    }
+
+    if(ok){
+      setSyncStatus('synced','已保存 ✓');
+      showToast(toDelete.length>0
+        ? `☁️ 已保存，同步删除了 ${toDelete.length} 条云端记录`
+        : '☁️ 所有历史数据已保存到云端');
+    } else {
+      setSyncStatus('error','部分保存失败');
+      showToast('⚠️ 部分数据保存失败，请重试', 4000);
+    }
+  }catch(e){
+    setSyncStatus('error','保存失败');
+    showToast('❌ 保存失败：'+e.message, 4000);
+    console.error('saveHistoryToCloud error',e);
+  }
+  btn.disabled=false; icon.textContent='☁️';
+}
+
+// ── 刷新数据：并行拉取，云端为准（健康记录），profile各字段独立比较时间戳
+async function pullCloudHistory(){
+  if(!currentUser){showToast('请先登录');return;}
+  const btn=document.getElementById('refresh-btn');
+  const icon=document.getElementById('refresh-icon');
+  btn.disabled=true; icon.textContent='⏳';
+  setSyncStatus('syncing','拉取中…');
+  try{
+    const uid=currentUser.user.id;
+
+    // ★ 两个请求并行发出，速度提升约一倍
+    const [rows, pRows] = await Promise.all([
+      sbFetch('/rest/v1/'+TBL_REC+'?user_id=eq.'+uid+'&order=date.desc'),
+      sbFetch('/rest/v1/'+TBL_PRO+'?user_id=eq.'+uid)
+    ]);
+
+    // 健康记录：云端完全覆盖
+    if(rows){
+      historyData = rows.map(r=>r.data).filter(r=>r&&r.date);
+      historyData.sort((a,b)=>b.date.localeCompare(a.date));
+      localStorage.setItem('hh_v2',JSON.stringify(historyData));
+    }
+
+    // 档案/餐单：各字段独立处理，本地更新时间更新则保留本地
+    if(pRows&&pRows.length){
+      const d={...pRows[0].data};
+      const cloudUpdated = pRows[0].updated_at || '';
+
+      // 餐单：比较本地 _mealPlanUpdated 时间戳，本地更新则不覆盖
+      if(d._mealPlan){
+        const localMpTime = localStorage.getItem('hmp_updated') || '';
+        if(cloudUpdated >= localMpTime){
+          mealPlan=d._mealPlan;
+          localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+          localStorage.setItem('hmp_updated', cloudUpdated);
+        }
+        // 本地更新时间更新 → 保留本地，顺手把本地推一遍
+        else { pushProfileToCloud().catch(()=>{}); }
+      }
+
+      if(d._weekPhases){weekPhases={...weekPhases,...d._weekPhases};localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));}
+      if(d._notes){dietNotes=d._notes;localStorage.setItem('h_notes',JSON.stringify(dietNotes));}
+      if(d._checks&&d._checks.date===todayKey()){todayChecks=d._checks;localStorage.setItem('htc_v2',JSON.stringify(todayChecks));}
+      delete d._mealPlan; delete d._weekPhases; delete d._notes; delete d._checks;
+      profile=d;
+      localStorage.setItem('hp_v2',JSON.stringify(profile));
+      loadProfile();
+    }
+
+    setSyncStatus('synced','已同步 ✓');
+    renderHistory();
+    renderPlanChecklist();
+    renderNotes();
+    syncTodayToForm();
+    showToast('✅ 已从云端拉取最新数据');
+  }catch(e){
+    setSyncStatus('error','拉取失败');
+    showToast('❌ 拉取失败，请检查网络', 4000);
+    console.error('pullCloudHistory error',e);
+  }
+  btn.disabled=false; icon.textContent='🔄';
+}
+
+// 保留旧名兼容性（autoRefresh 等内部调用）
+async function refreshFromCloud(){ return pullCloudHistory(); }
+
+// 刷新后将今日数据填入表单（已是合并后结果，直接使用）
+function syncTodayToForm(){
+  const today = historyData.find(r=>r.date===todayKey());
+  if(!today) return;
+  fillFields(today, true);
+  localStorage.setItem('h_draft', JSON.stringify(today));
+  document.getElementById('prev-hint').style.display='none';
+  if(today.meals && today.meals.length){
+    meals=today.meals;
+    mealCounter=Math.max(...meals.map(m=>parseInt(m.id.replace('m',''))||0),0);
+    renderMeals();
+  }
+}
+
+// 定时自动刷新（5分钟）
+let _autoRefreshTimer = null;
+function startAutoRefresh(){
+  if(_autoRefreshTimer) clearInterval(_autoRefreshTimer);
+  _autoRefreshTimer = setInterval(async()=>{
+    if(!currentUser) return;
+    try{
+      // 并行拉取两个接口
+      const [rows, pRows] = await Promise.all([
+        sbFetch('/rest/v1/'+TBL_REC+'?user_id=eq.'+currentUser.user.id+'&order=date.desc'),
+        sbFetch('/rest/v1/'+TBL_PRO+'?user_id=eq.'+currentUser.user.id)
+      ]);
+      let recordsChanged=false;
+      if(rows){
+        const newData=rows.map(r=>r.data).filter(Boolean);
+        newData.sort((a,b)=>b.date.localeCompare(a.date));
+        if(JSON.stringify(newData)!==JSON.stringify(historyData)){
+          historyData=newData;
+          localStorage.setItem('hh_v2',JSON.stringify(historyData));
+          recordsChanged=true;
+        }
+      }
+      if(pRows&&pRows.length){
+        const d={...pRows[0].data};
+        const cloudUpdated = pRows[0].updated_at || '';
+        // 餐单：只有云端更新才覆盖本地
+        if(d._mealPlan){
+          const localMpTime = localStorage.getItem('hmp_updated') || '';
+          if(cloudUpdated >= localMpTime){
+            const mpStr=JSON.stringify(d._mealPlan);
+            if(mpStr!==JSON.stringify(mealPlan)){
+              mealPlan=d._mealPlan;
+              localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+              localStorage.setItem('hmp_updated', cloudUpdated);
+              renderPlanChecklist();
+            }
+          }
+        }
+        if(d._weekPhases){weekPhases={...weekPhases,...d._weekPhases};localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));}
+        if(d._checks&&d._checks.date===todayKey()){todayChecks=d._checks;localStorage.setItem('htc_v2',JSON.stringify(todayChecks));}
+        if(d._notes&&JSON.stringify(d._notes)!==JSON.stringify(dietNotes)){
+          dietNotes=d._notes;localStorage.setItem('h_notes',JSON.stringify(dietNotes));
+          renderNotes();
+        }
+      }
+      if(recordsChanged){
+        renderHistory();
+        syncTodayToForm();
+        setSyncStatus('synced','自动更新 ✓');
+      }
+    }catch(e){}
+  }, 5*60*1000);
+}
+
+// 登录后仅拉取一次（首次同步）
+async function pullFromCloud(){
+  if(!currentUser||!SB_OK)return;
+  setSyncStatus('syncing','初始化…');
+  try{
+    // 并行拉取
+    const [rows, pRows] = await Promise.all([
+      sbFetch('/rest/v1/'+TBL_REC+'?user_id=eq.'+currentUser.user.id+'&order=date.desc'),
+      sbFetch('/rest/v1/'+TBL_PRO+'?user_id=eq.'+currentUser.user.id)
+    ]);
+    if(rows&&rows.length){
+      const cloud=rows.map(r=>r.data).filter(Boolean);
+      const merged={};
+      [...historyData,...cloud].forEach(r=>{if(r&&r.date)merged[r.date]=r;});
+      historyData=Object.values(merged).sort((a,b)=>b.date.localeCompare(a.date));
+      localStorage.setItem('hh_v2',JSON.stringify(historyData));
+    }
+    if(pRows&&pRows.length){
+      const d={...pRows[0].data};
+      const cloudUpdated = pRows[0].updated_at || '';
+      // 餐单：云端更新时间 >= 本地推送时间 才覆盖
+      if(d._mealPlan){
+        const localMpTime = localStorage.getItem('hmp_updated') || '';
+        if(cloudUpdated >= localMpTime){
+          mealPlan=d._mealPlan;
+          localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+          localStorage.setItem('hmp_updated', cloudUpdated);
+        }
+      }
+      if(d._weekPhases){weekPhases={...weekPhases,...d._weekPhases};localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));}
+      if(d._notes){dietNotes=d._notes;localStorage.setItem('h_notes',JSON.stringify(dietNotes));}
+      if(d._checks&&d._checks.date===todayKey()){todayChecks=d._checks;localStorage.setItem('htc_v2',JSON.stringify(todayChecks));}
+      delete d._mealPlan; delete d._weekPhases; delete d._notes; delete d._checks;
+      profile=d;
+      localStorage.setItem('hp_v2',JSON.stringify(profile));
+      loadProfile();
+    }
+    setSyncStatus('synced','已连接 ✓');
+    renderHistory();
+    renderPlanChecklist();
+    renderNotes();
+  }catch(e){setSyncStatus('error','连接失败');}
+}
+async function manualSync(){await refreshFromCloud();}
+
+// ══════════════════════════════════════════
+// AUTH — EMAIL
+// ══════════════════════════════════════════
+function showAuth(){
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
+}
+function hideAuth(){ document.getElementById('auth-overlay').classList.add('hidden'); }
+
+function switchAuthTab(tab, btn){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-login').style.display    = tab==='login'    ? 'flex' : 'none';
+  document.getElementById('auth-register').style.display = tab==='register' ? 'flex' : 'none';
+  document.getElementById('login-msg').style.display = 'none';
+  document.getElementById('reg-msg').style.display   = 'none';
+}
+
+function showAuthMsg(id, msg, type){
+  const el = document.getElementById(id);
+  el.style.display='block'; el.className='auth-msg '+type; el.textContent=msg;
+}
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pwd   = document.getElementById('login-pwd').value;
+  if(!email||!pwd){ showAuthMsg('login-msg','请填写邮箱和密码','err'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled=true; btn.textContent='登录中…';
+  showAuthMsg('login-msg','','ok');
+  document.getElementById('login-msg').style.display='none';
+
+  const res = await sbSignIn(email, pwd);
+  btn.disabled=false; btn.textContent='登录';
+  if(res.error || !res.access_token){
+    showAuthMsg('login-msg', translateAuthErr(res.error?.message||res.msg||'登录失败'), 'err');
+    return;
+  }
+  currentUser = res;
+  onLoggedIn();
+}
+
+async function doRegister(){
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pwd   = document.getElementById('reg-pwd').value;
+  if(!name||!email||!pwd){ showAuthMsg('reg-msg','请填写所有字段','err'); return; }
+  if(pwd.length<6){ showAuthMsg('reg-msg','密码至少6位','err'); return; }
+  const btn = document.getElementById('reg-btn');
+  btn.disabled=true; btn.textContent='注册中…';
+
+  const res = await sbSignUp(email, pwd, name);
+  btn.disabled=false; btn.textContent='注册';
+  if(res.error){ showAuthMsg('reg-msg', translateAuthErr(res.error.message), 'err'); return; }
+
+  // Try immediate login (works when email confirm is OFF in Supabase)
+  const loginRes = await sbSignIn(email, pwd);
+  if(loginRes.access_token){
+    currentUser = loginRes;
+    onLoggedIn();
+    return;
+  }
+  // Email confirm required
+  showAuthMsg('reg-msg','注册成功！请查收验证邮件后再登录','ok');
+  setTimeout(()=>{
+    switchAuthTab('login', document.getElementById('tab-login'));
+    document.getElementById('login-email').value = email;
+  }, 2000);
+}
+
+function translateAuthErr(msg){
+  if(!msg) return '操作失败，请重试';
+  if(msg.includes('Invalid login credentials')) return '邮箱或密码错误';
+  if(msg.includes('Email not confirmed'))       return '邮箱未验证，请查收邮件';
+  if(msg.includes('already registered'))        return '该邮箱已注册，请直接登录';
+  if(msg.includes('rate limit'))                return '操作太频繁，请稍后再试';
+  if(msg.includes('User already registered'))   return '该邮箱已注册，请直接登录';
+  return msg;
+}
+
+function onLoggedIn(){
+  hideAuth();
+  const name = currentUser.user?.user_metadata?.name || currentUser.user?.email || '用户';
+  const display = name.length>12 ? name.slice(0,12)+'…' : name;
+  document.getElementById('user-label').textContent = display;
+  document.getElementById('u-dot').className = 'u-dot';
+  document.getElementById('account-info').innerHTML =
+    `已登录：<strong>${currentUser.user?.email||''}</strong>`;
+  document.getElementById('account-btns').style.display = 'flex';
+  // Save full session including refresh_token for long-lived login
+  localStorage.setItem('h_auth', JSON.stringify({
+    access_token:  currentUser.access_token,
+    refresh_token: currentUser.refresh_token || '',
+    user:          currentUser.user
+  }));
+  setSyncStatus('synced','已连接');
+  pullFromCloud();
+  startAutoRefresh();
+}
+
+async function doLogout(){
+  if(!confirm('确定退出登录？本地数据保留')) return;
+  await sbSignOut();
+  currentUser = null;
+  localStorage.removeItem('h_auth');
+  document.getElementById('user-label').textContent = '未登录';
+  document.getElementById('u-dot').className = 'u-dot off';
+  document.getElementById('account-info').innerHTML =
+    `未登录 — <button class="local-btn" style="font-size:13px" onclick="showAuth()">点击登录</button>`;
+  document.getElementById('account-btns').style.display = 'none';
+  document.getElementById('sync-bar').style.display     = 'none';
+  showToast('已退出登录');
+}
+
+function showUserMenu(){
+  if(currentUser) showPage('profile', null, 'profile');
+  else showAuth();
+}
+function useLocalMode(){ hideAuth(); showToast('本地模式，数据仅存本机'); }
+
+// Restore session: refresh token first, fall back to saved token
+async function restoreSession(){
+  const saved = localStorage.getItem('h_auth');
+  if(!saved) return;
+  try{
+    const parsed = JSON.parse(saved);
+    if(!parsed?.access_token) return;
+
+    // 优先用 refresh_token 换取新的 access_token（不会过期）
+    if(parsed.refresh_token){
+      const refreshed = await tryRefreshToken(parsed.refresh_token);
+      if(refreshed && refreshed.access_token){
+        currentUser = {...parsed, ...refreshed};
+        localStorage.setItem('h_auth', JSON.stringify({
+          access_token:  refreshed.access_token,
+          refresh_token: refreshed.refresh_token || parsed.refresh_token,
+          user:          refreshed.user || parsed.user
+        }));
+        onLoggedIn();
+        return;
+      }
+      // refresh_token 也过期了，说明长时间未使用，需要重新登录
+      // 但先检查 access_token 是否还在有效期内
+    }
+
+    // 检查 access_token 是否过期（JWT payload 里有 exp）
+    try{
+      const payload = JSON.parse(atob(parsed.access_token.split('.')[1]));
+      const expSec = payload.exp;
+      const nowSec = Date.now() / 1000;
+      if(expSec && nowSec < expSec - 60){ // 还有超过 1 分钟才过期
+        currentUser = parsed;
+        onLoggedIn();
+        return;
+      }
+      // access_token 已过期且无法刷新，清除并要求重新登录
+      console.warn('Access token expired and refresh failed, clearing session');
+      localStorage.removeItem('h_auth');
+      setSyncStatus('error','登录已过期，请重新登录');
+    }catch(jwtErr){
+      // JWT 解析失败，也清除 session
+      localStorage.removeItem('h_auth');
+    }
+  }catch(e){
+    localStorage.removeItem('h_auth');
+  }
+}
+
+async function tryRefreshToken(refreshToken){
+  try{
+    const res = await fetch(_SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',
+      headers:{'apikey':_SB_KEY,'Content-Type':'application/json'},
+      body: JSON.stringify({refresh_token: refreshToken})
+    });
+    const data = await res.json();
+    if(data.access_token) return data;
+  }catch(e){}
+  return null;
+}
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+async function init(){
+  document.getElementById('today-display').textContent=formatDate(new Date());
+  document.getElementById('filter-month').value=new Date().toISOString().slice(0,7);
+  loadProfile();
+  initWaterCups();
+  loadTodayOrPrev();
+  if(meals.length===0)MEAL_PRESETS.forEach(n=>addMeal(n));
+  renderHistory();
+  renderPlanChecklist();
+  renderNotes();
+  await restoreSession();          // wait for session restore before deciding to show auth
+  renderPhasePresets();
+  initReminders();
+  if(!currentUser) showAuth();     // only show if truly not logged in
+}
+function formatDate(d){return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;}
+function todayKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+// ══════════════════════════════════════════
+// PAGES
+// ══════════════════════════════════════════
+function showPage(name,btn,bnId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(bnId)document.getElementById('bn-'+bnId)?.classList.add('active');
+  if(name==='history')renderHistory();
+  if(name==='plan'){renderPlanChecklist();renderRemindRows();}
+}
+
+// ══════════════════════════════════════════
+// EXERCISE
+// ══════════════════════════════════════════
+function switchExTab(name,btn){
+  document.querySelectorAll('.ex-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ex-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ex-'+name).classList.add('active');
+}
+function updateExTotals(){
+  let steps=0,min=0,kcal=0;
+  EX_SESS.forEach(s=>{
+    steps+=parseInt(document.getElementById('ex-'+s+'-steps')?.value||0)||0;
+    min+=parseInt(document.getElementById('ex-'+s+'-min')?.value||0)||0;
+    kcal+=parseInt(document.getElementById('ex-'+s+'-kcal')?.value||0)||0;
+  });
+  document.getElementById('total-steps').textContent=steps.toLocaleString();
+  document.getElementById('total-min').textContent=min;
+  document.getElementById('total-kcal').textContent=kcal;
+}
+
+// ══════════════════════════════════════════
+// WATER
+// ══════════════════════════════════════════
+function initWaterCups(){
+  const c=document.getElementById('water-cups');c.innerHTML='';waterCups=0;
+  document.getElementById('water-count').textContent=0;
+  for(let i=0;i<8;i++){const cup=document.createElement('div');cup.className='w-cup';cup.onclick=()=>toggleCup(i);c.appendChild(cup);}
+}
+function toggleCup(i){
+  waterCups=i+1;
+  document.querySelectorAll('.w-cup').forEach((c,idx)=>c.classList.toggle('filled',idx<waterCups));
+  document.getElementById('water-count').textContent=waterCups;
+}
+function restoreWaterCups(n){
+  waterCups=0;document.querySelectorAll('.w-cup').forEach(c=>c.classList.remove('filled'));
+  document.getElementById('water-count').textContent=0;
+  if(n>0)for(let i=0;i<Math.min(n,8);i++)toggleCup(i);
+}
+
+// ══════════════════════════════════════════
+// CALCULATIONS
+// ══════════════════════════════════════════
+function calcDerived(){
+  const h=parseFloat(document.getElementById('p-height').value);
+  const w=parseFloat(document.getElementById('f-weight').value);
+  document.getElementById('f-bmi').value=(h&&w)?(w/(h/100)**2).toFixed(2):'';
+  calcFatMass();
+}
+function calcFatMass(){
+  const w=parseFloat(document.getElementById('f-weight').value);
+  const p=parseFloat(document.getElementById('f-body-fat-pct').value);
+  document.getElementById('f-fat-mass').value=(w&&p)?(w*p/100).toFixed(2):'';
+}
+function calcWHR(){
+  const wa=parseFloat(document.getElementById('f-waist-cm').value);
+  const hi=parseFloat(document.getElementById('f-hip-cm').value);
+  document.getElementById('f-whr').value=(wa&&hi)?(wa/hi).toFixed(3):'';
+}
+
+// ══════════════════════════════════════════
+// MEALS
+// ══════════════════════════════════════════
+function addMeal(name){
+  const id='m'+(++mealCounter);
+  meals.push({id,name:name||'加餐',seq:mealCounter,desc:'',photos:[]});
+  renderMeals();
+  setTimeout(()=>{const el=document.querySelector('[data-meal="'+id+'"]');if(el)el.classList.add('open');},50);
+}
+function renderMeals(){
+  const cont=document.getElementById('meals-cont');cont.innerHTML='';
+  meals.forEach((meal,idx)=>{
+    const icon=MEAL_ICONS[meal.name]||'🍽️';
+    const div=document.createElement('div');div.className='meal-card';div.dataset.meal=meal.id;
+    div.innerHTML=`<div class="meal-hd" onclick="toggleMeal('${meal.id}')">
+      <div class="meal-title-row"><span>${icon}</span><span>${meal.name}</span><span style="font-size:11px;color:var(--gray);font-weight:400">第${idx+1}餐</span></div>
+      <span class="meal-chev">⌄</span></div>
+    <div class="meal-bd">
+      <div class="photo-up"><input type="file" accept="image/*" multiple onchange="handlePhotos(event,'${meal.id}')">
+        <div style="font-size:24px;margin-bottom:4px">📷</div>
+        <div style="font-size:12px;color:var(--gray)">点击上传餐食照片</div></div>
+      <div class="photo-grid" id="pv-${meal.id}"></div>
+      <div class="form-group" style="margin-top:10px">
+        <label>描述 / 感受</label>
+        <textarea placeholder="记录餐食内容、身体感受…" onchange="updateMealDesc('${meal.id}',this.value)">${meal.desc||''}</textarea>
+      </div>
+      <div style="margin-top:8px;display:flex;justify-content:flex-end">
+        <button class="btn btn-danger" onclick="removeMeal('${meal.id}')">删除此餐</button>
+      </div></div>`;
+    cont.appendChild(div);renderPreviews(meal.id);
+  });
+}
+function toggleMeal(id){document.querySelector('[data-meal="'+id+'"]').classList.toggle('open');}
+function updateMealDesc(id,v){const m=meals.find(m=>m.id===id);if(m)m.desc=v;}
+function removeMeal(id){meals=meals.filter(m=>m.id!==id);renderMeals();}
+// 压缩图片到最长边 800px，quality 0.72，显著减小 base64 体积
+function compressImage(file, maxSize=800, quality=0.72){
+  return new Promise(resolve=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width, h=img.height;
+        if(w>maxSize||h>maxSize){
+          if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
+          else{w=Math.round(w*maxSize/h);h=maxSize;}
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+function handlePhotos(event,mealId){
+  const meal=meals.find(m=>m.id===mealId);if(!meal)return;
+  Array.from(event.target.files).forEach(async file=>{
+    try{
+      const compressed = await compressImage(file);
+      meal.photos.push(compressed);
+      renderPreviews(mealId);
+    }catch(e){
+      console.error('Photo compress error',e);
+      // fallback: 原图
+      const r=new FileReader();
+      r.onload=ev=>{meal.photos.push(ev.target.result);renderPreviews(mealId);};
+      r.readAsDataURL(file);
+    }
+  });
+}
+function renderPreviews(mealId){
+  const meal=meals.find(m=>m.id===mealId);const cont=document.getElementById('pv-'+mealId);
+  if(!meal||!cont)return;cont.innerHTML='';
+  meal.photos.forEach((src,idx)=>{
+    const w=document.createElement('div');w.className='photo-wrap';
+    w.innerHTML=`<img class="photo-img" src="${src}" onclick="openImg('${src}')"><button class="photo-rm" onclick="removePhoto('${mealId}',${idx})">✕</button>`;
+    cont.appendChild(w);
+  });
+}
+function removePhoto(mealId,idx){const m=meals.find(m=>m.id===mealId);if(m){m.photos.splice(idx,1);renderPreviews(mealId);}}
+
+// ══════════════════════════════════════════
+// MEAL PLAN CHECKLIST
+// ══════════════════════════════════════════
+function showPlanEditor(){document.getElementById('plan-editor').style.display='block';}
+function hidePlanEditor(){document.getElementById('plan-editor').style.display='none';}
+
+function handlePlanFile(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('plan-paste').value=e.target.result;};
+  reader.readAsText(file,'UTF-8');
+}
+
+function parsePlan(){
+  const raw=document.getElementById('plan-paste').value.trim();
+  if(!raw){showToast('请先输入餐单内容');return;}
+  // Build empty slots
+  const slots={};
+  PLAN_SLOTS.forEach(s=>{slots[s.id]={...s,items:[]};});
+  let currentSlot=null;
+  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  lines.forEach(line=>{
+    // Check if line is a slot header
+    let matched=false;
+    for(const [slotId,keywords] of Object.entries(SLOT_KEYWORDS)){
+      for(const kw of keywords){
+        const re=new RegExp('^'+kw+'[：:、，,\\s]*','i');
+        if(re.test(line)){
+          currentSlot=slotId;
+          const rest=line.replace(re,'').trim();
+          if(rest){
+            rest.split(/[,，、]+/).forEach(item=>{
+              const t=item.trim();
+              if(t)slots[slotId].items.push({id:genId(),text:t,done:false});
+            });
+          }
+          matched=true;break;
+        }
+      }
+      if(matched)break;
+    }
+    if(!matched){
+      // Plain line — split by comma and add to current slot or distribute
+      const items=line.split(/[,，、]+/).map(s=>s.trim()).filter(Boolean);
+      const target=currentSlot||(slots.breakfast.items.length===0?'breakfast':slots.lunch.items.length===0?'lunch':'dinner');
+      items.forEach(t=>{slots[target].items.push({id:genId(),text:t,done:false});});
+    }
+  });
+  mealPlan={slots:PLAN_SLOTS.map(s=>slots[s.id])};
+  localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+  localStorage.setItem('hmp_updated', new Date().toISOString());
+  hidePlanEditor();
+  document.getElementById('plan-paste').value='';
+  resetTodayChecks(true);
+  renderPlanChecklist();
+  showToast('✅ 餐单已生成！');
+  if(currentUser) pushProfileToCloud();  // 餐单存在 profile 里，推送 profile
+}
+
+function genId(){return Math.random().toString(36).slice(2,8);}
+
+function getTodayChecks(){
+  if(!todayChecks||todayChecks.date!==todayKey()){
+    todayChecks={date:todayKey(),checks:{}};
+    localStorage.setItem('htc_v2',JSON.stringify(todayChecks));
+  }
+  return todayChecks;
+}
+
+function toggleCheck(itemId){
+  const tc=getTodayChecks();
+  tc.checks[itemId]=!tc.checks[itemId];
+  localStorage.setItem('htc_v2',JSON.stringify(tc));
+  renderPlanChecklist();
+  if(currentUser) pushProfileToCloud();
+}
+
+function resetTodayChecks(silent=false){
+  if(!silent&&!confirm('确定重置今日所有打卡记录？'))return;
+  todayChecks={date:todayKey(),checks:{}};
+  localStorage.setItem('htc_v2',JSON.stringify(todayChecks));
+  renderPlanChecklist();
+  if(!silent)showToast('今日打卡已重置');
+}
+
+function addItemToSlot(slotId){
+  const inp=document.getElementById('add-inp-'+slotId);
+  const text=inp.value.trim();if(!text)return;
+  const slot=mealPlan.slots.find(s=>s.id===slotId);
+  if(!slot)return;
+  slot.items.push({id:genId(),text,done:false});
+  inp.value='';
+  localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+  localStorage.setItem('hmp_updated', new Date().toISOString());
+  renderPlanChecklist();
+  if(currentUser) pushProfileToCloud();
+}
+
+function deleteItem(slotId,itemId){
+  const slot=mealPlan?.slots.find(s=>s.id===slotId);if(!slot)return;
+  slot.items=slot.items.filter(i=>i.id!==itemId);
+  localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+  localStorage.setItem('hmp_updated', new Date().toISOString());
+  renderPlanChecklist();
+  if(currentUser) pushProfileToCloud();
+}
+
+
+
+// ══════════════════════════════════════════
+// MEAL REMINDER SYSTEM
+// ══════════════════════════════════════════
+const REMIND_DEFAULTS = {
+  breakfast:  { name:'早餐',     icon:'🌅', time:'07:30', on:true  },
+  morning:    { name:'上午加餐', icon:'🍎', time:'10:00', on:false },
+  lunch:      { name:'中餐',     icon:'☀️', time:'12:00', on:true  },
+  afternoon:  { name:'下午加餐', icon:'🍵', time:'15:30', on:false },
+  dinner:     { name:'晚餐',     icon:'🌙', time:'18:30', on:true  },
+  night:      { name:'夜宵/其他',icon:'🌃', time:'21:00', on:false },
+};
+let remindSettings = JSON.parse(localStorage.getItem('h_remind')||'null') || JSON.parse(JSON.stringify(REMIND_DEFAULTS));
+let remindTimers = {};
+let remindEnabled = localStorage.getItem('h_remind_on')==='1';
+
+function saveRemindSettings(){
+  localStorage.setItem('h_remind', JSON.stringify(remindSettings));
+  localStorage.setItem('h_remind_on', remindEnabled?'1':'0');
+}
+
+function renderRemindRows(){
+  const container = document.getElementById('remind-rows');
+  if(!container) return;
+  container.innerHTML = Object.entries(remindSettings).map(([id, r])=>`
+    <div class="remind-row">
+      <span style="font-size:16px;width:22px;text-align:center">${r.icon}</span>
+      <span style="flex:1;font-size:13px;font-weight:600;color:var(--charcoal)">${r.name}</span>
+      <input type="time" class="remind-time-input" value="${r.time}"
+        onchange="remindSettings['${id}'].time=this.value;saveRemindSettings();scheduleReminders()">
+      <label class="remind-toggle">
+        <input type="checkbox" ${r.on?'checked':''} onchange="remindSettings['${id}'].on=this.checked;saveRemindSettings();scheduleReminders()">
+        <span class="remind-slider"></span>
+      </label>
+    </div>`).join('');
+}
+
+function updateRemindBtn(){
+  const btn = document.getElementById('remind-enable-btn');
+  const body = document.getElementById('remind-body');
+  if(!btn||!body) return;
+  if(remindEnabled){
+    btn.textContent='提醒已开启 ✓';
+    btn.style.background='var(--sage-light)';
+    btn.style.color='var(--sage-dark)';
+    btn.style.borderColor='var(--sage)';
+    body.style.display='block';
+  } else {
+    btn.textContent='开启提醒';
+    btn.style.background='var(--cream)';
+    btn.style.color='var(--charcoal)';
+    btn.style.borderColor='var(--border)';
+    body.style.display='none';
+  }
+}
+
+function toggleReminders(){
+  if(!remindEnabled){
+    remindEnabled = true;
+    saveRemindSettings();
+    updateRemindBtn();
+    renderRemindRows();
+    scheduleReminders();
+    showToast('🔔 用餐提醒已开启');
+    // Warm up audio context with a silent beep (required by Safari/WeChat)
+    playBeep(0.001);
+  } else {
+    remindEnabled = false;
+    saveRemindSettings();
+    clearReminders();
+    dismissRemindAlert();
+    updateRemindBtn();
+    showToast('🔕 用餐提醒已关闭');
+  }
+}
+
+// ── Audio: Web Audio API beep (works in Safari + WeChat, no file needed) ──
+let _audioCtx = null;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return _audioCtx;
+}
+function playBeep(vol=0.6, freq=880, dur=0.6){
+  try{
+    const ctx = getAudioCtx();
+    // Resume if suspended (Safari requires user gesture first)
+    if(ctx.state==='suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+dur);
+  }catch(e){ console.warn('Audio error', e); }
+}
+function playMealChime(){
+  // Three-tone chime: do-mi-sol
+  playBeep(0.5, 523, 0.4);
+  setTimeout(()=>playBeep(0.5, 659, 0.4), 350);
+  setTimeout(()=>playBeep(0.6, 784, 0.7), 700);
+}
+
+// ── Full-screen alert overlay (works everywhere, no permission needed) ──
+let _remindAlertTimer = null;
+function showRemindAlert(r){
+  dismissRemindAlert();
+  const el = document.createElement('div');
+  el.id = 'remind-alert';
+  el.style.cssText = [
+    'position:fixed','inset:0','z-index:99999',
+    'display:flex','flex-direction:column','align-items:center','justify-content:center',
+    'background:rgba(0,0,0,0.65)','-webkit-backdrop-filter:blur(6px)','backdrop-filter:blur(6px)',
+    'animation:remindPop .3s ease'
+  ].join(';');
+  el.innerHTML = `
+    <div style="background:#fff;border-radius:24px;padding:36px 32px;text-align:center;max-width:320px;width:88%;box-shadow:0 20px 60px rgba(0,0,0,.35)">
+      <div style="font-size:64px;margin-bottom:8px;animation:remindBounce 0.6s ease infinite alternate">${r.icon}</div>
+      <div style="font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:6px">用餐时间到！</div>
+      <div style="font-size:16px;color:#555;margin-bottom:4px">${r.name}</div>
+      <div style="font-size:13px;color:#999;margin-bottom:28px">记得按餐单进食并打卡 ✅</div>
+      <button onclick="dismissRemindAlert();showPage('plan',null,'plan')"
+        style="width:100%;padding:14px;background:var(--sage);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:600;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;cursor:pointer;margin-bottom:10px">
+        去打卡 →
+      </button>
+      <button onclick="dismissRemindAlert()"
+        style="width:100%;padding:10px;background:#f3f4f6;color:#666;border:none;border-radius:14px;font-size:14px;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei','Source Han Sans SC',sans-serif;cursor:pointer">
+        稍后提醒
+      </button>
+    </div>`;
+  // Tap backdrop to dismiss
+  el.addEventListener('click', e=>{ if(e.target===el) dismissRemindAlert(); });
+  document.body.appendChild(el);
+  // Auto-dismiss after 60s
+  _remindAlertTimer = setTimeout(dismissRemindAlert, 60000);
+}
+
+function dismissRemindAlert(){
+  if(_remindAlertTimer){ clearTimeout(_remindAlertTimer); _remindAlertTimer=null; }
+  const el = document.getElementById('remind-alert');
+  if(el) el.remove();
+}
+
+function clearReminders(){
+  Object.values(remindTimers).forEach(t=>clearTimeout(t));
+  remindTimers = {};
+}
+
+function scheduleReminders(){
+  clearReminders();
+  if(!remindEnabled) return;
+  const now = new Date();
+  Object.entries(remindSettings).forEach(([id, r])=>{
+    if(!r.on) return;
+    const [hh, mm] = r.time.split(':').map(Number);
+    const fire = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0);
+    let delay = fire - now;
+    if(delay < 0) return; // already passed today
+    remindTimers[id] = setTimeout(()=>{ fireReminder(r); }, delay);
+  });
+}
+
+function fireReminder(r){
+  if(!remindEnabled) return;
+  playMealChime();
+  showRemindAlert(r);
+}
+
+function initReminders(){
+  updateRemindBtn();
+  renderRemindRows();
+  if(remindEnabled) scheduleReminders();
+  // Inject keyframes for alert animation if not present
+  if(!document.getElementById('remind-kf')){
+    const s=document.createElement('style');
+    s.id='remind-kf';
+    s.textContent=`
+      @keyframes remindPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+      @keyframes remindBounce{from{transform:scale(1) rotate(-5deg)}to{transform:scale(1.15) rotate(5deg)}}
+    `;
+    document.head.appendChild(s);
+  }
+}
+
+// ── Drag-and-drop state ──
+let _drag = null;
+
+function renderPlanChecklist(){
+  const noHint=document.getElementById('no-plan-hint');
+  const slotsEl=document.getElementById('plan-slots');
+  if(!mealPlan||!mealPlan.slots){
+    noHint.style.display='block';slotsEl.innerHTML='';return;
+  }
+  noHint.style.display='none';
+  const tc=getTodayChecks();
+  slotsEl.innerHTML='';
+  mealPlan.slots.forEach(slot=>{
+    if(!slot.items.length)return;
+    const done=slot.items.filter(i=>tc.checks[i.id]).length;
+    const total=slot.items.length;
+    const allDone=done===total&&total>0;
+    const div=document.createElement('div');
+    div.className='slot-card';
+    div.innerHTML=`
+      <div class="slot-hd" onclick="this.closest('.slot-card').classList.toggle('open')">
+        <div class="slot-hd-left">
+          <span class="slot-icon">${slot.icon}</span>
+          <span class="slot-name">${slot.name}</span>
+          <span class="slot-progress" style="${allDone?'background:var(--green-bg);color:var(--green);':''}">
+            ${allDone?'✓ 全部完成':''+done+'/'+total}
+          </span>
+        </div>
+        <span class="slot-chev">⌄</span>
+      </div>
+      <div class="slot-bd">
+        <div class="slot-items" id="si-${slot.id}"></div>
+        <div class="slot-add-row">
+          <input class="slot-add-input" id="add-inp-${slot.id}" placeholder="添加食物…"
+            onkeydown="if(event.key==='Enter')addItemToSlot('${slot.id}')">
+          <button class="slot-add-btn" onclick="addItemToSlot('${slot.id}')">添加</button>
+        </div>
+      </div>`;
+    if(!allDone)div.classList.add('open');
+    slotsEl.appendChild(div);
+
+    const itemsEl=div.querySelector('#si-'+slot.id);
+    slot.items.forEach(item=>{
+      const checked=!!tc.checks[item.id];
+      const row=document.createElement('div');
+      row.className='checklist-item'+(checked?' done':'');
+      row.dataset.itemId=item.id;
+      row.dataset.slotId=slot.id;
+      row.innerHTML=`
+        <div class="ci-drag" title="拖动排序">⠿</div>
+        <div class="ci-check" onclick="event.stopPropagation();toggleCheck('${item.id}')">${checked?'✓':''}</div>
+        <div class="ci-text" onclick="event.stopPropagation();toggleCheck('${item.id}')">${item.text}</div>
+        <button class="ci-del" onclick="event.stopPropagation();deleteItem('${slot.id}','${item.id}')">×</button>`;
+      attachDragEvents(row);
+      itemsEl.appendChild(row);
+    });
+  });
+}
+
+function attachDragEvents(row){
+  const handle=row.querySelector('.ci-drag');
+  // Mouse
+  handle.addEventListener('mousedown',e=>{
+    e.preventDefault();
+    _startDrag(row,e.clientX,e.clientY);
+    const mv=e=>_moveDrag(e.clientX,e.clientY);
+    const up=()=>{_endDrag();document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};
+    document.addEventListener('mousemove',mv);
+    document.addEventListener('mouseup',up);
+  });
+  // Touch
+  handle.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    _startDrag(row,t.clientX,t.clientY);
+  },{passive:false});
+  handle.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    _moveDrag(t.clientX,t.clientY);
+  },{passive:false});
+  handle.addEventListener('touchend',e=>{e.preventDefault();_endDrag();},{passive:false});
+}
+
+function _startDrag(row,x,y){
+  _drag={itemId:row.dataset.itemId,fromSlotId:row.dataset.slotId,el:row,ghost:null,overEl:null,overPos:null};
+  row.classList.add('dragging');
+  const ghost=row.cloneNode(true);
+  ghost.style.cssText='position:fixed;z-index:9999;pointer-events:none;width:'+row.offsetWidth+'px;opacity:.85;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:9px;';
+  ghost.style.left=(x-20)+'px'; ghost.style.top=(y-24)+'px';
+  document.body.appendChild(ghost);
+  _drag.ghost=ghost;
+}
+
+function _moveDrag(x,y){
+  if(!_drag)return;
+  _drag.ghost.style.left=(x-20)+'px';
+  _drag.ghost.style.top=(y-24)+'px';
+  document.querySelectorAll('.drag-over-top,.drag-over-bot,.drag-over-empty').forEach(e=>e.classList.remove('drag-over-top','drag-over-bot','drag-over-empty'));
+  _drag.ghost.style.display='none';
+  const target=document.elementFromPoint(x,y);
+  _drag.ghost.style.display='';
+  if(!target)return;
+  const targetRow=target.closest('.checklist-item');
+  const targetList=target.closest('.slot-items');
+  if(targetRow&&targetRow!==_drag.el){
+    const rect=targetRow.getBoundingClientRect();
+    if(y<rect.top+rect.height/2){targetRow.classList.add('drag-over-top');_drag.overEl=targetRow;_drag.overPos='before';}
+    else{targetRow.classList.add('drag-over-bot');_drag.overEl=targetRow;_drag.overPos='after';}
+  } else if(targetList&&!targetList.querySelector('.checklist-item:not(.dragging)')){
+    targetList.classList.add('drag-over-empty');_drag.overEl=targetList;_drag.overPos='empty';
+  } else {_drag.overEl=null;_drag.overPos=null;}
+}
+
+function _endDrag(){
+  if(!_drag)return;
+  document.querySelectorAll('.drag-over-top,.drag-over-bot,.drag-over-empty').forEach(e=>e.classList.remove('drag-over-top','drag-over-bot','drag-over-empty'));
+  _drag.el.classList.remove('dragging');
+  if(_drag.ghost)_drag.ghost.remove();
+  const{itemId,fromSlotId,overEl,overPos}=_drag;
+  _drag=null;
+  if(!overEl||!overPos)return;
+  const fromSlot=mealPlan.slots.find(s=>s.id===fromSlotId);
+  const itemIdx=fromSlot.items.findIndex(i=>i.id===itemId);
+  const[item]=fromSlot.items.splice(itemIdx,1);
+  if(overPos==='empty'){
+    const toSlotId=overEl.id.replace('si-','');
+    mealPlan.slots.find(s=>s.id===toSlotId).items.push(item);
+  } else {
+    const toSlotId=overEl.dataset.slotId;
+    const toSlot=mealPlan.slots.find(s=>s.id===toSlotId);
+    const toIdx=toSlot.items.findIndex(i=>i.id===overEl.dataset.itemId);
+    toSlot.items.splice(overPos==='before'?toIdx:toIdx+1,0,item);
+  }
+  localStorage.setItem('hmp_v2',JSON.stringify(mealPlan));
+  localStorage.setItem('hmp_updated', new Date().toISOString());
+  renderPlanChecklist();
+  if(window.currentUser) pushProfileToCloud().catch(()=>{});
+}
+
+// ══════════════════════════════════════════
+// DIET NOTES
+// ══════════════════════════════════════════
+function toggleNotesEditor(){
+  const ed=document.getElementById('notes-editor');
+  const showing=ed.style.display!=='none';
+  ed.style.display=showing?'none':'block';
+  if(!showing && dietNotes){
+    document.getElementById('notes-paste').value=dietNotes.text||'';
+  }
+}
+function handleNotesFile(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('notes-paste').value=e.target.result;};
+  reader.readAsText(file,'UTF-8');
+}
+function saveNotes(){
+  const raw=document.getElementById('notes-paste').value.trim();
+  const items=raw.split('\n')
+    .map(l=>l.replace(/^[•\-\*\d\.\s]+/,'').trim())
+    .filter(Boolean);
+  dietNotes={text:raw, items};
+  localStorage.setItem('h_notes',JSON.stringify(dietNotes));
+  document.getElementById('notes-editor').style.display='none';
+  renderNotes();
+  if(currentUser) pushProfileToCloud();
+  showToast('✅ 注意事项已保存');
+}
+function renderNotes(){
+  const disp=document.getElementById('notes-display');
+  if(!disp)return;
+  if(!dietNotes||!dietNotes.items||!dietNotes.items.length){
+    disp.innerHTML='<div class="notes-empty">暂无注意事项，点击右上角「编辑」添加</div>';
+    return;
+  }
+  disp.innerHTML=`<div class="notes-list">${
+    dietNotes.items.map(item=>
+      `<div class="note-item"><span class="note-bullet">•</span><span class="note-text">${item}</span></div>`
+    ).join('')
+  }</div>`;
+}
+
+// ══════════════════════════════════════════
+// COLLECT / FILL
+// ══════════════════════════════════════════
+function getExData(s){const d={};EX_FLD.forEach(f=>{const el=document.getElementById('ex-'+s+'-'+f);if(el)d[f]=el.value;});return d;}
+function setExData(s,d){if(!d)return;EX_FLD.forEach(f=>{const el=document.getElementById('ex-'+s+'-'+f);if(el&&d[f]!==undefined)el.value=d[f];});updateExTotals();}
+function collectTodayData(){
+  const d={date:todayKey(),waterCups};
+  Object.entries(BODY_FIELDS).forEach(([k,id])=>{d[k]=document.getElementById(id)?.value||'';});
+  d.bmi=document.getElementById('f-bmi').value;
+  d.fatMass=document.getElementById('f-fat-mass').value;
+  d.whr=document.getElementById('f-whr').value;
+  d.phase=document.getElementById('f-phase')?.value||'';
+  d.exercise={};EX_SESS.forEach(s=>{d.exercise[s]=getExData(s);});
+  d.meals=meals.map(m=>({...m,photos:[...(m.photos||[])]}));
+  d.updated_at = new Date().toISOString(); // 本地时间戳，用于多设备合并时比较
+  return d;
+}
+// forceAll=true 时完整覆盖所有字段（用于刷新/加载当天云端数据）
+// forceAll=false 时只填空白字段（用于从昨天数据预填）
+function fillFields(data, forceAll=false){
+  Object.entries(BODY_FIELDS).forEach(([k,id])=>{
+    const el=document.getElementById(id);
+    if(!el||el.readOnly)return;
+    if(forceAll){ el.value=data[k]??''; }
+    else if(data[k]!==undefined&&data[k]!=='') el.value=data[k];
+  });
+  // 只读自动计算字段
+  if(forceAll||!document.getElementById('f-bmi').value) document.getElementById('f-bmi').value=data.bmi??'';
+  if(forceAll||!document.getElementById('f-fat-mass').value) document.getElementById('f-fat-mass').value=data.fatMass??'';
+  if(forceAll||!document.getElementById('f-whr').value) document.getElementById('f-whr').value=data.whr??'';
+  if(data.exercise) EX_SESS.forEach(s=>{
+    if(forceAll) setExData(s, data.exercise[s]||{});
+    else if(data.exercise[s]) setExData(s, data.exercise[s]);
+  });
+  calcDerived(); calcWHR();
+  if(forceAll) restoreWaterCups(data.waterCups||0);
+  else if(data.waterCups) restoreWaterCups(data.waterCups);
+  const ph=document.getElementById('f-phase');
+  if(ph){ if(forceAll) ph.value=data.phase||''; else if(data.phase) ph.value=data.phase; }
+  // 餐食只在完整加载时还原
+  if(forceAll && data.meals && data.meals.length){
+    meals=data.meals;
+    mealCounter=Math.max(...meals.map(m=>parseInt(m.id.replace('m',''))||0),0);
+    renderMeals();
+  }
+  renderPhasePresets();
+  updateExTotals();
+}
+function loadTodayOrPrev(){
+  // 1. 优先用 historyData 中当天的云端数据（最权威）
+  const cloudToday = historyData.find(r=>r.date===todayKey());
+  if(cloudToday){
+    fillFields(cloudToday, true); // 完整覆盖
+    document.getElementById('prev-hint').style.display='none';
+    localStorage.setItem('h_draft', JSON.stringify(cloudToday));
+    return;
+  }
+  // 2. 再看本地 draft（本机刚填但未刷新云端的情况）
+  const draft=JSON.parse(localStorage.getItem('h_draft')||'null');
+  if(draft && draft.date===todayKey()){
+    fillFields(draft, true);
+    document.getElementById('prev-hint').style.display='none';
+    return;
+  }
+  // 3. 新的一天：从前一天预填身体数据（不含餐食）
+  const prev=[...historyData].sort((a,b)=>b.date.localeCompare(a.date)).find(r=>r.date<todayKey());
+  if(prev){
+    const d={...prev}; delete d.meals; delete d.date; delete d.phase;
+    fillFields(d, false); // 只填空白
+    document.getElementById('prev-hint').style.display='inline-block';
+  }
+}
+function saveToday(){
+  const data = collectTodayData();
+  const saveBtn = document.getElementById('save-btn');
+
+  // 清除上次错误面板
+  const ep=document.getElementById('cloud-error-panel'); if(ep) ep.style.display='none';
+
+  // ① 本地先保存（带容量保护）
+  historyData = historyData.filter(r=>r.date!==data.date);
+  historyData.unshift(data);
+  historyData.sort((a,b)=>b.date.localeCompare(a.date));
+  try {
+    localStorage.setItem('hh_v2', JSON.stringify(historyData));
+    localStorage.setItem('h_draft', JSON.stringify(data));
+  } catch(e) {
+    // localStorage 超限，去掉照片重试
+    try {
+      const stripped = historyData.map(r=>({...r,meals:(r.meals||[]).map(m=>({...m,photos:[]}))}));
+      localStorage.setItem('hh_v2', JSON.stringify(stripped));
+      localStorage.setItem('h_draft', JSON.stringify({...data,meals:(data.meals||[]).map(m=>({...m,photos:[]}))}));
+    } catch(e2) { console.error('localStorage full', e2); }
+  }
+
+  // ② 立即给用户反馈（不等云端）
+  if(saveBtn){
+    saveBtn.disabled=true;
+    saveBtn.textContent='✅ 已保存';
+    saveBtn.style.background='var(--green)';
+    setTimeout(()=>{ saveBtn.textContent='💾 保存记录'; saveBtn.style.background=''; saveBtn.disabled=false; },2000);
+  }
+
+  // ③ 未登录：仅本地
+  if(!currentUser || !SB_OK){
+    showToast('✅ 已保存到本地');
+    setSyncStatus('','本地已保存');
+    return;
+  }
+
+  // ④ 已登录：后台异步上传云端，不阻塞 UI
+  showToast('✅ 本地已保存，上传中…');
+  setSyncStatus('syncing','上传中…');
+
+  pushRecordToCloud(data).then(ok=>{
+    if(ok){
+      showToast('☁️ 云端同步成功！');
+      setSyncStatus('synced','已同步 ✓');
+    } else {
+      showToast('⚠️ 本地已保存，云端上传失败（可手动刷新重试）', 4000);
+      setSyncStatus('error','云端上传失败');
+    }
+  }).catch(e=>{
+    console.error('saveToday cloud push error:', e);
+    showToast('⚠️ 云端上传异常：'+e.message, 4000);
+    setSyncStatus('error','上传异常');
+  });
+}
+function clearToday(){
+  if(!confirm('确定清空今日所有数据？'))return;
+  Object.values(BODY_FIELDS).forEach(id=>{const el=document.getElementById(id);if(el&&!el.readOnly)el.value='';});
+  ['f-bmi','f-fat-mass','f-whr'].forEach(id=>document.getElementById(id).value='');
+  EX_SESS.forEach(s=>EX_FLD.forEach(f=>{const el=document.getElementById('ex-'+s+'-'+f);if(el)el.value='';}));
+  updateExTotals();meals=[];initWaterCups();MEAL_PRESETS.forEach(n=>addMeal(n));
+  document.getElementById('prev-hint').style.display='none';
+  localStorage.removeItem('h_draft');showToast('已清空今日数据');
+}
+
+// ══════════════════════════════════════════
+// TREND
+// ══════════════════════════════════════════
+function trendTag(curr,prev,lowerBetter){
+  if(curr===''||curr===undefined||prev===''||prev===undefined)return '';
+  const c=parseFloat(curr),p=parseFloat(prev);
+  if(isNaN(c)||isNaN(p)||c===p)return '';
+  const up=c>p,diff=Math.abs(c-p),ds=diff<1?diff.toFixed(1):Math.round(diff).toString();
+  if(lowerBetter)return up?`<span class="trend-tag t-up">↑${ds}</span>`:`<span class="trend-tag t-dn">↓${ds}</span>`;
+  else return up?`<span class="trend-tag t-up-g">↑${ds}</span>`:`<span class="trend-tag t-dn-b">↓${ds}</span>`;
+}
+
+// ══════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════
+// weekPhases: { 'weekKey': 'phase label' }  e.g. '2025-W01': '调理日'
+let weekPhases = JSON.parse(localStorage.getItem('h_week_phases')||'{}');
+let dietNotes   = JSON.parse(localStorage.getItem('h_notes')||'null'); // {text:'...', items:[]}
+
+function getWeekKey(dateStr){
+  // Group by rolling 7-day windows based on record index, not calendar week
+  // We'll use ISO week for display but group by sequential week buckets
+  const d=new Date(dateStr+'T00:00:00');
+  const jan1=new Date(d.getFullYear(),0,1);
+  const weekNum=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+  return d.getFullYear()+'-W'+String(weekNum).padStart(2,'0');
+}
+
+function saveWeekPhase(weekKey, phase){
+  weekPhases[weekKey]=phase;
+  localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));
+  // Also push to cloud via profile
+  if(currentUser) pushProfileToCloud();
+}
+
+function renderWeekPhaseEdit(weekKey){
+  const current=weekPhases[weekKey]||'';
+  const presets=['准备日','调理日','巩固期','挑战期','恢复期','大餐日','轻断食','维持期'];
+  const pEl=document.getElementById('wp-presets-'+weekKey);
+  if(pEl) pEl.innerHTML=presets.map(p=>
+    `<span class="phase-chip${current===p?' active':''}"
+      onclick="selectWeekPhase('${weekKey}','${p}')">${p}</span>`
+  ).join('');
+}
+
+function selectWeekPhase(weekKey, phase){
+  const inp=document.getElementById('wp-inp-'+weekKey);
+  if(inp) inp.value=phase;
+  saveWeekPhase(weekKey, phase);
+  renderHistory();
+}
+
+function commitWeekPhase(weekKey){
+  const inp=document.getElementById('wp-inp-'+weekKey);
+  if(!inp) return;
+  saveWeekPhase(weekKey, inp.value.trim());
+  renderHistory();
+}
+
+async function deleteHistoryRecord(dateStr){
+  if(!confirm(`确定删除 ${dateStr} 的记录？\n\n删除后请点「☁️ 保存到云端」同步到数据库`)) return;
+  // 只删本地
+  historyData = historyData.filter(r=>r.date!==dateStr);
+  localStorage.setItem('hh_v2', JSON.stringify(historyData));
+  renderHistory();
+  showToast('🗑 已删除本地记录，请点「保存到云端」同步');
+  // 高亮保存按钮提醒用户
+  const saveBtn=document.getElementById('save-history-btn');
+  if(saveBtn){
+    saveBtn.style.animation='none';
+    saveBtn.style.background='var(--red)';
+    saveBtn.style.boxShadow='0 0 0 3px rgba(239,68,68,0.3)';
+    setTimeout(()=>{
+      saveBtn.style.background='var(--sage)';
+      saveBtn.style.boxShadow='';
+    }, 4000);
+  }
+}
+
+function renderHistory(){
+  const cont=document.getElementById('history-list');
+  const fm=document.getElementById('filter-month').value;
+  let recs=[...historyData];
+  if(fm) recs=recs.filter(r=>r.date.startsWith(fm));
+  recs.sort((a,b)=>b.date.localeCompare(a.date));
+  if(!recs.length){
+    cont.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><p>暂无历史记录<br><small style="font-size:12px">点击「刷新数据」获取最新记录</small></p></div>';
+    return;
+  }
+  cont.innerHTML='';
+  const all=[...historyData].sort((a,b)=>b.date.localeCompare(a.date));
+  const wds=['日','一','二','三','四','五','六'];
+
+  // Group records into 7-day buckets by weekKey
+  const weekMap={};
+  recs.forEach(record=>{
+    const wk=getWeekKey(record.date);
+    if(!weekMap[wk]) weekMap[wk]=[];
+    weekMap[wk].push(record);
+  });
+  const weekKeys=Object.keys(weekMap).sort((a,b)=>b.localeCompare(a));
+
+  weekKeys.forEach((weekKey, wi)=>{
+    const weekRecs=weekMap[weekKey].sort((a,b)=>b.date.localeCompare(a.date));
+    const phase=weekPhases[weekKey]||'';
+    const dates=weekRecs.map(r=>r.date).sort();
+    const dStart=new Date(dates[0]+'T00:00:00');
+    const dEnd=new Date(dates[dates.length-1]+'T00:00:00');
+    const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
+    const rangeStr=dates.length>1?`${fmt(dStart)} ~ ${fmt(dEnd)}`:fmt(dStart);
+    const presets=['准备日','调理日','巩固期','挑战期','恢复期','大餐日','轻断食','维持期'];
+
+    const wg=document.createElement('div');
+    wg.className='week-group';
+    wg.innerHTML=`
+      <div class="week-header">
+        <div class="week-label">
+          <span class="week-num">第${weekKeys.length-wi}周</span>
+          <span class="week-range">${rangeStr}　共${weekRecs.length}天</span>
+        </div>
+        <div class="week-phase-wrap">
+          <input class="week-phase-input" id="wp-inp-${weekKey}"
+            value="${phase}" placeholder="本周标签…"
+            onblur="commitWeekPhase('${weekKey}')"
+            onkeydown="if(event.key==='Enter'){this.blur();}">
+        </div>
+      </div>
+      <div style="margin-bottom:8px;display:flex;gap:5px;flex-wrap:wrap">
+        ${presets.map(p=>`<span class="phase-chip${phase===p?' active':''}"
+          onclick="selectWeekPhase('${weekKey}','${p}')" style="font-size:11px;padding:3px 10px">${p}</span>`).join('')}
+      </div>
+      <div class="week-body" id="wb-${weekKey}"></div>`;
+    cont.appendChild(wg);
+
+    const wb=document.getElementById('wb-'+weekKey);
+    weekRecs.forEach(record=>{
+      const prev=all.find(r=>r.date<record.date);
+      const div=document.createElement('div');div.className='history-item';
+      const d=new Date(record.date+'T00:00:00');
+      const badges=[];
+      if(record.weight){const t=prev?trendTag(record.weight,prev.weight,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">体重</span>${record.weight}kg${t}</span>`);}
+      if(record.bmi){const t=prev?trendTag(record.bmi,prev.bmi,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">BMI</span>${record.bmi}${t}</span>`);}
+      if(record.bodyFatPct){const t=prev?trendTag(record.bodyFatPct,prev.bodyFatPct,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">体脂率</span>${record.bodyFatPct}%${t}</span>`);}
+      if(record.fatMass){const t=prev?trendTag(record.fatMass,prev?.fatMass,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">脂肪量</span>${record.fatMass}kg${t}</span>`);}
+      if(record.muscle){const t=prev?trendTag(record.muscle,prev?.muscle,true):'';badges.push(`<span class="h-badge"><span class="h-badge-lbl">肌肉</span>${record.muscle}%${t}</span>`);}
+      const exS=exSummary(record);
+      if(exS){const ce=totalEx(record),pe=prev?totalEx(prev):null;const t=pe!==null?trendTag(ce,pe,false):'';badges.push(`<span class="h-badge"><span class="h-badge-lbl">运动</span>${exS}${t}</span>`);}
+      if(record.phase) badges.push(`<span class="h-badge" style="background:#f0f4ff;border-color:#c8d4f0;color:#4a6090"><span class="h-badge-lbl" style="color:#8090b0">阶段</span>${record.phase}</span>`);
+      div.innerHTML=`
+        <div class="history-hd" onclick="this.closest('.history-item').classList.toggle('open')">
+          <div style="flex:1;min-width:0">
+            <div class="history-date">${d.getMonth()+1}月${d.getDate()}日 <span style="font-size:13px;font-family:'PingFang SC','Microsoft YaHei',sans-serif">星期${'日一二三四五六'[d.getDay()]}</span></div>
+            <div class="history-badges">${badges.join('')}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <button onclick="event.stopPropagation();deleteHistoryRecord('${record.date}')" title="删除此记录"
+              style="background:none;border:1px solid #f87171;color:#ef4444;border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;line-height:1">🗑</button>
+            <span class="meal-chev" style="font-size:18px;color:var(--gray)">⌄</span>
+          </div>
+        </div>
+        <div class="history-bd">${renderDetail(record)}</div>`;
+      wb.appendChild(div);
+    });
+  });
+}
+function totalEx(r){return EX_SESS.reduce((a,s)=>a+(parseInt(r.exercise?.[s]?.steps||0)||0),0);}
+function exSummary(r){
+  if(!r.exercise){return r.steps?r.steps+'步':'';}
+  const steps=totalEx(r);
+  const min=EX_SESS.reduce((a,s)=>a+(parseInt(r.exercise?.[s]?.min||0)||0),0);
+  const p=[];if(steps)p.push(steps.toLocaleString()+'步');if(min)p.push(min+'分钟');return p.join(' · ');
+}
+function renderDetail(r){
+  const KEY=['weight','bmi','bodyFatPct','fatMass'];
+  const stats=[
+    {k:'weight',l:'体重',u:'kg'},{k:'bmi',l:'BMI',u:''},{k:'bodyFatPct',l:'体脂率',u:'%'},{k:'fatMass',l:'脂肪量',u:'kg'},
+    {k:'fat',l:'脂肪(设备)',u:'%'},{k:'water',l:'水分',u:'%'},{k:'muscle',l:'肌肉',u:'%'},{k:'bodyAge',l:'体龄',u:'岁'},
+    {k:'visceral',l:'内脂',u:''},{k:'bmr',l:'基础代谢',u:'kcal'},{k:'waistCm',l:'腰围',u:'cm'},{k:'hipCm',l:'臀围',u:'cm'},{k:'whr',l:'腰臀比',u:''},
+    {k:'waterCups',l:'饮水',u:'杯'},{k:'waterMl',l:'饮水',u:'ml'},
+  ].filter(s=>r[s.k]!==undefined&&r[s.k]!=='');
+  const statsHtml=stats.length?`<div class="det-grid" style="margin-bottom:12px">${stats.map(s=>`<div class="s-box${KEY.includes(s.k)?' key':''}"><div class="s-label">${s.l}</div><div class="s-val">${r[s.k]}<span class="s-unit">${s.u}</span></div></div>`).join('')}</div>`:'';
+  let exHtml='';
+  if(r.exercise){
+    const lbs={'morning':'🌅 上午','noon':'☀️ 中午','evening':'🌆 下午'};
+    const bs=EX_SESS.map(s=>{const ex=r.exercise[s];if(!ex)return '';const ps=[];if(ex.type)ps.push(ex.type);if(ex.steps)ps.push(ex.steps+'步');if(ex.min)ps.push(ex.min+'分钟');if(ex.kcal)ps.push(ex.kcal+'kcal');if(ex.note)ps.push(ex.note);if(!ps.length)return '';return `<div class="ex-hist-block"><div class="ex-hist-name">${lbs[s]}</div>${ps.join(' · ')}</div>`;}).filter(Boolean).join('');
+    if(bs)exHtml=`<div class="h-section-title">运动记录</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:12px">${bs}</div>`;
+  }
+  const mealsHtml=r.meals&&r.meals.length?`<div class="h-section-title">餐食记录</div><div class="h-meals">${r.meals.map(m=>`<div class="h-meal"><div class="h-meal-name">${MEAL_ICONS[m.name]||'🍽️'} ${m.name}</div>${m.desc?`<div class="h-meal-desc">${m.desc}</div>`:''}${m.photos&&m.photos.length?`<div class="h-photos">${m.photos.map(p=>`<img src="${p}" onclick="openImg('${p}')">`).join('')}</div>`:''}</div>`).join('')}</div>`:'';
+  return statsHtml+exHtml+mealsHtml||'<div style="color:var(--gray);font-size:13px">暂无详细数据</div>';
+}
+
+// ══════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════
+function loadProfile(){
+  if(!profile||!Object.keys(profile).length)return;
+  const map={name:'p-name',gender:'p-gender',age:'p-age',height:'p-height',originWeight:'p-origin-weight',waist:'p-waist',targetWeight:'p-target-weight',targetFat:'p-target-fat',type:'p-type',advisor:'p-advisor'};
+  Object.entries(map).forEach(([k,id])=>{if(profile[k]!==undefined)document.getElementById(id).value=profile[k];});
+}
+function saveProfile(){
+  profile={name:document.getElementById('p-name').value,gender:document.getElementById('p-gender').value,age:document.getElementById('p-age').value,height:document.getElementById('p-height').value,originWeight:document.getElementById('p-origin-weight').value,waist:document.getElementById('p-waist').value,targetWeight:document.getElementById('p-target-weight').value,targetFat:document.getElementById('p-target-fat').value,type:document.getElementById('p-type').value,advisor:document.getElementById('p-advisor').value};
+  localStorage.setItem('hp_v2',JSON.stringify(profile));
+  showToast('✅ 档案已保存！');
+  calcDerived();
+  if(currentUser)syncToCloud();
+}
+
+// ══════════════════════════════════════════
+// PHASE PRESETS (Today page)
+// ══════════════════════════════════════════
+const PHASE_PRESETS=['准备日','调理日','巩固期','挑战期','恢复期','大餐日','轻断食','维持期'];
+function renderPhasePresets(){
+  const cont=document.getElementById('phase-presets');if(!cont)return;
+  const cur=document.getElementById('f-phase')?.value||'';
+  cont.innerHTML=PHASE_PRESETS.map(p=>
+    `<button class="phase-chip${cur===p?' active':''}" onclick="selectPhase('${p}')">${p}</button>`
+  ).join('');
+}
+function selectPhase(p){
+  const el=document.getElementById('f-phase');if(el)el.value=p;
+  renderPhasePresets();
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function showToast(msg, dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function openImg(src){document.getElementById('modal-img').src=src;document.getElementById('img-modal').classList.add('show');}
+
+init();
+</script>
+</body>
+</html>

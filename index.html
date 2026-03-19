@@ -398,10 +398,173 @@ textarea{resize:vertical;min-height:66px}
       <div class="date-sub">今日健康记录</div>
       <div class="prev-hint" id="prev-hint" style="display:none">📋 已从前日数据填充，可直接修改</div>
     </div>
-    <div class="sync-bar" id="sync-bar">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-text">本地</span>
-      <button onclick="testCloudSave()" style="margin-left:6px;font-size:10px;padding:2px 7px;background:#6b7280;color:#fff;border:none;border-radius:5px;cursor:pointer" title="测试云端连接">🔧测试</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button onclick="showAiInput()" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(99,102,241,.3)">
+        🤖 AI 识别填写
+      </button>
+      <div class="sync-bar" id="sync-bar">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-text">本地</span>
+        <button onclick="testCloudSave()" style="margin-left:6px;font-size:10px;padding:2px 7px;background:#6b7280;color:#fff;border:none;border-radius:5px;cursor:pointer" title="测试云端连接">🔧测试</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI 识别模态框 -->
+  <div id="ai-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:flex-end;justify-content:center">
+    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;padding:24px 20px 36px;max-height:85vh;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:17px;font-weight:700;color:#1a1a1a">🤖 AI 智能识别</div>
+        <button onclick="hideAiInput(true)" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1">×</button>
+      </div>
+      <!-- 两种模式切换 -->
+      <div style="display:flex;gap:0;margin-bottom:16px;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden">
+        <button id="ai-tab-img" onclick="switchAiTab('img')"
+          style="flex:1;padding:9px;font-size:13px;font-weight:600;border:none;background:#6366f1;color:#fff;cursor:pointer;transition:all .2s">
+          📷 截图识别
+        </button>
+        <button id="ai-tab-text" onclick="switchAiTab('text')"
+          style="flex:1;padding:9px;font-size:13px;font-weight:600;border:none;background:#f3f4f6;color:#6b7280;cursor:pointer;transition:all .2s">
+          📝 文字识别
+        </button>
+      </div>
+
+      <!-- 图片模式 -->
+      <div id="ai-img-panel">
+        <div id="ai-img-dropzone"
+          onclick="document.getElementById('ai-img-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#6366f1'"
+          ondragleave="this.style.borderColor='#d1d5db'"
+          ondrop="handleAiImgDrop(event)"
+          style="border:2px dashed #d1d5db;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:12px">
+          <div style="font-size:36px;margin-bottom:8px">📷</div>
+          <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:4px">点击上传或拖放截图</div>
+          <div style="font-size:12px;color:#9ca3af">支持体脂秤、健康App截图等</div>
+          <input type="file" id="ai-img-input" accept="image/*" style="display:none" onchange="handleAiImgSelect(event)">
+        </div>
+        <div id="ai-img-preview" style="display:none;margin-bottom:12px;text-align:center">
+          <img id="ai-preview-img" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid #e5e7eb">
+        </div>
+      </div>
+
+      <!-- 文字模式 -->
+      <div id="ai-text-panel" style="display:none">
+        <textarea id="ai-text-input" placeholder="粘贴或输入体测数据，例如：
+体重：58.5kg
+体脂率：22.3%
+肌肉：42.1%
+水分：54.8%
+BMI：21.5
+基础代谢：1380kcal
+内脏脂肪：4
+体龄：26
+腰围：72cm" style="width:100%;height:160px;border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+      </div>
+
+      <!-- 识别结果预览 -->
+      <div id="ai-result-area" style="display:none;margin-top:12px">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">✅ 识别结果（确认后点击填入）</div>
+        <div id="ai-result-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="applyAiResult()" style="flex:1;padding:12px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">✅ 填入数据</button>
+          <button onclick="clearAiResult()" style="padding:12px 16px;background:#f3f4f6;color:#6b7280;border:none;border-radius:10px;font-size:14px;cursor:pointer">重新识别</button>
+        </div>
+      </div>
+
+      <!-- AI 提供商配置 -->
+      <div id="ai-proxy-cfg" style="margin-bottom:12px">
+        <!-- 提供商切换 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <button id="ai-prov-silicon" onclick="switchAiProvider('silicon')"
+            style="padding:9px 4px;font-size:11px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:8px;background:#f3f4f6;color:#6b7280;cursor:pointer;transition:all .2s">
+            🇨🇳 硅基流动<br><span style="font-weight:400;font-size:10px">免费·国内直连·图片✅+文字✅</span>
+          </button>
+          <button id="ai-prov-gemini" onclick="switchAiProvider('gemini')"
+            style="padding:9px 4px;font-size:11px;font-weight:600;border:1.5px solid #e5e7eb;border-radius:8px;background:#f3f4f6;color:#6b7280;cursor:pointer;transition:all .2s">
+            ✨ Gemini<br><span style="font-weight:400;font-size:10px">免费 · 需翻墙 · 图片+文字</span>
+          </button>
+        </div>
+
+        <!-- 硅基流动配置 -->
+        <div id="ai-cfg-silicon" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;color:#6b7280;font-weight:600">硅基流动 API Key</span>
+            <a href="https://cloud.siliconflow.cn/account/ak" target="_blank" style="font-size:11px;color:#16a34a">免费注册获取 →</a>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="ai-silicon-key" type="password" placeholder="sk-..."
+              style="flex:1;font-size:12px;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:8px"
+              oninput="saveAiConfig()">
+            <div id="ai-proxy-status" style="font-size:11px;color:#9ca3af;white-space:nowrap"></div>
+          </div>
+          <div style="font-size:11px;color:#16a34a;margin-top:4px">✅ 国内直连 · 注册送免费额度 · 文字识别稳定</div>
+        </div>
+
+        <!-- Gemini 配置 -->
+        <div id="ai-cfg-gemini" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;color:#6b7280;font-weight:600">Gemini API Key</span>
+            <a href="https://aistudio.google.com/apikey" target="_blank" style="font-size:11px;color:#10b981">免费获取（需翻墙）→</a>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="ai-gemini-key" type="password" placeholder="AIza..."
+              style="flex:1;font-size:12px;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:8px"
+              oninput="saveAiConfig()">
+          </div>
+          <div style="font-size:11px;color:#10b981;margin-top:4px">✅ 每天1500次免费 · 需要科学上网</div>
+        </div>
+      </div>
+
+
+
+      <!-- 操作按钮 -->
+      <div id="ai-action-area" style="margin-top:12px">
+        <button onclick="runAiRecognize()" id="ai-recognize-btn"
+          style="width:100%;padding:13px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">
+          🤖 开始识别
+        </button>
+        <div id="ai-error" style="display:none;margin-top:8px;padding:10px 12px;background:#fff0f0;border:1px solid #fca5a5;border-radius:8px;font-size:12px;color:#dc2626"></div>
+      </div>
+
+      <!-- 代理配置说明弹窗 -->
+      <div id="proxy-help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:16px;padding:24px 20px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-size:16px;font-weight:700">⚙️ 代理配置说明</div>
+            <button onclick="document.getElementById('proxy-help-modal').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999">×</button>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.7">
+            <p style="margin:0 0 12px">AI 识别需要通过 <b>Cloudflare Worker</b> 代理访问 Anthropic API（解决浏览器跨域限制），配置一次永久有效，完全免费。</p>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:14px">
+              <b>第一步：获取 Anthropic API Key</b>
+              <ol style="margin:8px 0 0;padding-left:18px">
+                <li>访问 <b>console.anthropic.com</b></li>
+                <li>注册/登录 → API Keys → Create Key</li>
+                <li>复制 Key（以 sk- 开头）</li>
+              </ol>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:14px">
+              <b>第二步：部署 Cloudflare Worker</b>
+              <ol style="margin:8px 0 0;padding-left:18px">
+                <li>访问 <b>dash.cloudflare.com</b>，注册免费账号</li>
+                <li>左侧菜单 → Workers & Pages → Create</li>
+                <li>点 "Create Worker" → 部署</li>
+                <li>点 "Edit code"，<b>粘贴下载的 cf-worker.js 内容</b></li>
+                <li>点右上角 "Deploy"</li>
+                <li>回到 Worker 页面 → Settings → Variables → Add variable<br>
+                  变量名：<code style="background:#e5e7eb;padding:1px 5px;border-radius:4px">ANTHROPIC_API_KEY</code><br>
+                  变量值：你的 API Key（选 Encrypt）</li>
+                <li>保存后复制 Worker URL（如 <code style="background:#e5e7eb;padding:1px 5px;border-radius:4px">https://xxx.workers.dev</code>）</li>
+              </ol>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px">
+              <b>第三步：填入代理地址</b>
+              <p style="margin:6px 0 0">将 Worker URL 粘贴到上方「代理地址」输入框，即可使用 AI 识别功能。</p>
+            </div>
+          </div>
+          <a href="/mnt/user-data/outputs/cf-worker.js" download style="display:none" id="dl-worker"></a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -425,6 +588,10 @@ textarea{resize:vertical;min-height:66px}
         <label><span class="key-dot"></span> 脂肪量 (kg) <span style="font-size:10px;font-weight:400">自动</span></label>
         <input type="number" id="f-fat-mass" readonly placeholder="自动计算">
       </div>
+      <div class="form-group key-metric">
+        <label><span class="key-dot"></span> 肌肉量 (kg) <span style="font-size:10px;font-weight:400">自动</span></label>
+        <input type="number" id="f-muscle-mass" readonly placeholder="自动计算">
+      </div>
     </div>
   </div>
 
@@ -434,7 +601,7 @@ textarea{resize:vertical;min-height:66px}
     <div class="form-grid">
       <div class="form-group"><label>脂肪% (设备)</label><input type="number" id="f-fat" step="0.1" placeholder="如：22.0"></div>
       <div class="form-group"><label>水分 (%)</label><input type="number" id="f-water" step="0.1" placeholder="如：55.0"></div>
-      <div class="form-group"><label>肌肉 (%)</label><input type="number" id="f-muscle" step="0.1" placeholder="如：42.0"></div>
+      <div class="form-group"><label>肌肉 (%)</label><input type="number" id="f-muscle" step="0.1" placeholder="如：42.0" oninput="calcMuscleMass()"></div>
       <div class="form-group"><label>体龄</label><input type="number" id="f-body-age" placeholder="如：28"></div>
       <div class="form-group"><label>内脂</label><input type="number" id="f-visceral" step="0.1" placeholder="如：5"></div>
       <div class="form-group"><label>基础代谢 (kcal)</label><input type="number" id="f-bmr" placeholder="如：1400"></div>
@@ -509,11 +676,26 @@ textarea{resize:vertical;min-height:66px}
 
   <!-- DAY PHASE -->
   <div class="phase-label-card">
-    <div class="card-title" style="margin-bottom:10px">📌 今日阶段标签</div>
-    <div class="phase-row">
-      <input type="text" id="f-phase" placeholder="输入或选择标签，如：准备日" style="flex:1;max-width:220px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="card-title" style="margin:0">📌 今日阶段标签</div>
+      <button onclick="togglePhaseEditor()" style="background:none;border:none;color:var(--sage);font-size:12px;cursor:pointer;padding:2px 6px">⚙️ 管理标签</button>
     </div>
+    <!-- 已选标签展示 -->
+    <div id="today-phase-selected" style="display:flex;gap:6px;flex-wrap:wrap;min-height:28px;margin-bottom:8px"></div>
+    <!-- 标签选择器 -->
     <div class="phase-preset-list" id="phase-presets"></div>
+    <!-- 标签管理器（默认隐藏） -->
+    <div id="phase-editor" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;color:var(--gray);margin-bottom:6px">点击标签删除 / 输入新标签后回车添加</div>
+      <div id="phase-manage-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px">
+        <input id="phase-new-input" type="text" placeholder="输入新标签名…" style="flex:1;font-size:13px"
+          onkeydown="if(event.key==='Enter')addCustomPhase()">
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:13px" onclick="addCustomPhase()">添加</button>
+      </div>
+    </div>
+    <!-- 隐藏字段兼容旧版存储 -->
+    <input type="hidden" id="f-phase" value="">
   </div>
 
   <div class="btn-row">
@@ -536,6 +718,7 @@ textarea{resize:vertical;min-height:66px}
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="btn btn-sec" style="font-size:13px;padding:7px 16px" onclick="showPlanEditor()">✏️ 编辑餐单</button>
+      <button class="btn" style="font-size:13px;padding:7px 14px;background:var(--sage);color:#fff;border:none;border-radius:10px" onclick="saveMealPlanToCloud()" id="plan-save-btn">☁️ 保存餐单</button>
       <button class="btn btn-danger" style="padding:7px 14px" onclick="resetTodayChecks()">重置今日</button>
     </div>
   </div>
@@ -725,7 +908,7 @@ const SLOT_KEYWORDS={
   afternoon:['下午加餐','下午','加餐2','下加','下午茶'],
   dinner:['晚餐','晚上','晚'],
 };
-const BODY_FIELDS={weight:'f-weight',fat:'f-fat',water:'f-water',muscle:'f-muscle',bodyAge:'f-body-age',visceral:'f-visceral',bmr:'f-bmr',bodyFatPct:'f-body-fat-pct',waistCm:'f-waist-cm',hipCm:'f-hip-cm',waterMl:'f-water-ml'};
+const BODY_FIELDS={weight:'f-weight',fat:'f-fat',water:'f-water',muscle:'f-muscle',bodyAge:'f-body-age',visceral:'f-visceral',bmr:'f-bmr',bodyFatPct:'f-body-fat-pct',waistCm:'f-waist-cm',hipCm:'f-hip-cm',waterMl:'f-water-ml',muscleMass:'f-muscle-mass'};
 
 // ══════════════════════════════════════════
 // SUPABASE
@@ -909,16 +1092,27 @@ async function pushProfileToCloud(){
   if(Object.keys(weekPhases).length)payload._weekPhases=weekPhases;
   if(dietNotes)payload._notes=dietNotes;
   if(todayChecks)payload._checks=todayChecks;
+  if(customPhases&&customPhases.length)payload._customPhases=customPhases;
   const now = new Date().toISOString();
   const res = await sbFetch('/rest/v1/'+TBL_PRO+'?on_conflict=user_id',{
     method:'POST', prefer:'resolution=merge-duplicates,return=minimal',
     body:{user_id:uid, data:payload, updated_at:now}
   });
-  // 记录本地餐单最后推送时间（用于刷新时判断谁更新）
   if(res !== false) localStorage.setItem('hmp_updated', now);
 }
 // 兼容旧调用
 async function syncToCloud(){ await pushProfileToCloud(); }
+
+// ── 餐单页「保存餐单」按钮：明确保存并给反馈
+async function saveMealPlanToCloud(){
+  if(!currentUser){showToast('请先登录才能同步到云端');return;}
+  const btn=document.getElementById('plan-save-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 保存中…';}
+  localStorage.setItem('hmp_updated', new Date().toISOString());
+  await pushProfileToCloud();
+  if(btn){btn.textContent='✅ 已保存';setTimeout(()=>{btn.textContent='☁️ 保存餐单';btn.disabled=false;},2000);}
+  showToast('☁️ 餐单已保存到云端，其他设备刷新后可获取');
+}
 
 // 手动刷新：云端数据与本地合并（云端优先，但不丢弃本地有而云端没有的数据）
 // ── 保存到云端：把本地所有历史数据推送到云端（含删除同步）
@@ -1011,7 +1205,8 @@ async function pullCloudHistory(){
       if(d._weekPhases){weekPhases={...weekPhases,...d._weekPhases};localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));}
       if(d._notes){dietNotes=d._notes;localStorage.setItem('h_notes',JSON.stringify(dietNotes));}
       if(d._checks&&d._checks.date===todayKey()){todayChecks=d._checks;localStorage.setItem('htc_v2',JSON.stringify(todayChecks));}
-      delete d._mealPlan; delete d._weekPhases; delete d._notes; delete d._checks;
+      if(d._customPhases&&Array.isArray(d._customPhases)){customPhases=d._customPhases;saveCustomPhases();}
+      delete d._mealPlan; delete d._weekPhases; delete d._notes; delete d._checks; delete d._customPhases;
       profile=d;
       localStorage.setItem('hp_v2',JSON.stringify(profile));
       loadProfile();
@@ -1092,6 +1287,9 @@ function startAutoRefresh(){
           dietNotes=d._notes;localStorage.setItem('h_notes',JSON.stringify(dietNotes));
           renderNotes();
         }
+        if(d._customPhases&&Array.isArray(d._customPhases)&&JSON.stringify(d._customPhases)!==JSON.stringify(customPhases)){
+          customPhases=d._customPhases;saveCustomPhases();renderPhasePresets();
+        }
       }
       if(recordsChanged){
         renderHistory();
@@ -1134,7 +1332,8 @@ async function pullFromCloud(){
       if(d._weekPhases){weekPhases={...weekPhases,...d._weekPhases};localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));}
       if(d._notes){dietNotes=d._notes;localStorage.setItem('h_notes',JSON.stringify(dietNotes));}
       if(d._checks&&d._checks.date===todayKey()){todayChecks=d._checks;localStorage.setItem('htc_v2',JSON.stringify(todayChecks));}
-      delete d._mealPlan; delete d._weekPhases; delete d._notes; delete d._checks;
+      if(d._customPhases&&Array.isArray(d._customPhases)){customPhases=d._customPhases;saveCustomPhases();}
+      delete d._mealPlan; delete d._weekPhases; delete d._notes; delete d._checks; delete d._customPhases;
       profile=d;
       localStorage.setItem('hp_v2',JSON.stringify(profile));
       loadProfile();
@@ -1143,7 +1342,15 @@ async function pullFromCloud(){
     renderHistory();
     renderPlanChecklist();
     renderNotes();
-  }catch(e){setSyncStatus('error','连接失败');}
+    // ✅ 云端数据到位后，才预填今日表单（确保能拿到昨天的数据）
+    if(window._markTodayFilled){ window._markTodayFilled(); }
+    loadTodayOrPrev();
+  }catch(e){
+    setSyncStatus('error','连接失败');
+    // 云端失败时兜底：用本地数据预填
+    if(window._markTodayFilled){ window._markTodayFilled(); }
+    loadTodayOrPrev();
+  }
 }
 async function manualSync(){await refreshFromCloud();}
 
@@ -1335,7 +1542,11 @@ async function init(){
   document.getElementById('filter-month').value=new Date().toISOString().slice(0,7);
   loadProfile();
   initWaterCups();
-  loadTodayOrPrev();
+  // ⚠️ 不在这里立即预填：等云端数据回来后再填，避免本地缺数据时显示前天
+  // 设置一个 2s 兜底：如果云端还没回来（无网络/未登录），再用本地数据预填
+  let _todayFilled = false;
+  window._markTodayFilled = function(){ _todayFilled = true; };
+  setTimeout(()=>{ if(!_todayFilled){ _todayFilled=true; loadTodayOrPrev(); } }, 2000);
   if(meals.length===0)MEAL_PRESETS.forEach(n=>addMeal(n));
   renderHistory();
   renderPlanChecklist();
@@ -1343,7 +1554,11 @@ async function init(){
   await restoreSession();          // wait for session restore before deciding to show auth
   renderPhasePresets();
   initReminders();
-  if(!currentUser) showAuth();     // only show if truly not logged in
+  if(!currentUser){
+    // 未登录，直接用本地数据预填
+    if(!_todayFilled){ _todayFilled=true; loadTodayOrPrev(); }
+    showAuth();
+  }
 }
 function formatDate(d){return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;}
 function todayKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -1392,7 +1607,9 @@ function initWaterCups(){
   for(let i=0;i<8;i++){const cup=document.createElement('div');cup.className='w-cup';cup.onclick=()=>toggleCup(i);c.appendChild(cup);}
 }
 function toggleCup(i){
-  waterCups=i+1;
+  // 点击已填且是最后一杯 → 减1；点击第1杯且只有1杯 → 清零；否则设为i+1
+  if(waterCups===i+1) waterCups=i===0?0:i; // 点当前最后一杯 → 减1
+  else waterCups=i+1;
   document.querySelectorAll('.w-cup').forEach((c,idx)=>c.classList.toggle('filled',idx<waterCups));
   document.getElementById('water-count').textContent=waterCups;
 }
@@ -1410,11 +1627,28 @@ function calcDerived(){
   const w=parseFloat(document.getElementById('f-weight').value);
   document.getElementById('f-bmi').value=(h&&w)?(w/(h/100)**2).toFixed(2):'';
   calcFatMass();
+  calcMuscleMass();
 }
 function calcFatMass(){
   const w=parseFloat(document.getElementById('f-weight').value);
   const p=parseFloat(document.getElementById('f-body-fat-pct').value);
   document.getElementById('f-fat-mass').value=(w&&p)?(w*p/100).toFixed(2):'';
+  calcMuscleMass();
+}
+function calcMuscleMass(){
+  // 优先级：① AI直接识别到的肌肉量(kg) → 保留不覆盖
+  //         ② 体重 × 肌肉率(%) / 100
+  //         ③ 体重 × (100 - 体脂率 - 22%) / 100 粗估
+  const w=parseFloat(document.getElementById('f-weight').value);
+  const musclePct=parseFloat(document.getElementById('f-muscle').value);
+  const fatPct=parseFloat(document.getElementById('f-body-fat-pct').value);
+  const el=document.getElementById('f-muscle-mass');
+  if(!el) return;
+  // 如果已有值（AI直接填入的肌肉量kg），不再用公式覆盖
+  if(el.value && el.value!=='') return;
+  if(w&&musclePct){ el.value=(w*musclePct/100).toFixed(2); }
+  else if(w&&fatPct){ el.value=(w*(100-fatPct-22)/100).toFixed(2); } // 粗估
+  else { el.value=''; }
 }
 function calcWHR(){
   const wa=parseFloat(document.getElementById('f-waist-cm').value);
@@ -1993,8 +2227,9 @@ function collectTodayData(){
   Object.entries(BODY_FIELDS).forEach(([k,id])=>{d[k]=document.getElementById(id)?.value||'';});
   d.bmi=document.getElementById('f-bmi').value;
   d.fatMass=document.getElementById('f-fat-mass').value;
+  d.muscleMass=document.getElementById('f-muscle-mass')?.value||'';
   d.whr=document.getElementById('f-whr').value;
-  d.phase=document.getElementById('f-phase')?.value||'';
+  d.phase=getTodayPhasesFromField(); // 数组
   d.exercise={};EX_SESS.forEach(s=>{d.exercise[s]=getExData(s);});
   d.meals=meals.map(m=>({...m,photos:[...(m.photos||[])]}));
   d.updated_at = new Date().toISOString(); // 本地时间戳，用于多设备合并时比较
@@ -2013,6 +2248,7 @@ function fillFields(data, forceAll=false){
   if(forceAll||!document.getElementById('f-bmi').value) document.getElementById('f-bmi').value=data.bmi??'';
   if(forceAll||!document.getElementById('f-fat-mass').value) document.getElementById('f-fat-mass').value=data.fatMass??'';
   if(forceAll||!document.getElementById('f-whr').value) document.getElementById('f-whr').value=data.whr??'';
+  if(forceAll||!document.getElementById('f-muscle-mass')?.value) { if(document.getElementById('f-muscle-mass')) document.getElementById('f-muscle-mass').value=data.muscleMass??''; }
   if(data.exercise) EX_SESS.forEach(s=>{
     if(forceAll) setExData(s, data.exercise[s]||{});
     else if(data.exercise[s]) setExData(s, data.exercise[s]);
@@ -2021,7 +2257,13 @@ function fillFields(data, forceAll=false){
   if(forceAll) restoreWaterCups(data.waterCups||0);
   else if(data.waterCups) restoreWaterCups(data.waterCups);
   const ph=document.getElementById('f-phase');
-  if(ph){ if(forceAll) ph.value=data.phase||''; else if(data.phase) ph.value=data.phase; }
+  if(ph){
+    // 兼容旧版字符串和新版数组
+    const phaseVal=data.phase||[];
+    const phaseArr=Array.isArray(phaseVal)?phaseVal:(phaseVal?[phaseVal]:[]);
+    if(forceAll){ ph.value=phaseArr.length?JSON.stringify(phaseArr):''; setTodayPhasesField(phaseArr); }
+    else if(phaseArr.length){ ph.value=JSON.stringify(phaseArr); setTodayPhasesField(phaseArr); }
+  }
   // 餐食只在完整加载时还原
   if(forceAll && data.meals && data.meals.length){
     meals=data.meals;
@@ -2140,45 +2382,41 @@ function trendTag(curr,prev,lowerBetter){
 let weekPhases = JSON.parse(localStorage.getItem('h_week_phases')||'{}');
 let dietNotes   = JSON.parse(localStorage.getItem('h_notes')||'null'); // {text:'...', items:[]}
 
-function getWeekKey(dateStr){
-  // Group by rolling 7-day windows based on record index, not calendar week
-  // We'll use ISO week for display but group by sequential week buckets
-  const d=new Date(dateStr+'T00:00:00');
-  const jan1=new Date(d.getFullYear(),0,1);
-  const weekNum=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
-  return d.getFullYear()+'-W'+String(weekNum).padStart(2,'0');
+// 按记录顺序每7条为一周（不按自然周），weekKey = 'seq-N'
+function getWeekKey(dateStr, allSortedDates){
+  // allSortedDates: 所有日期升序数组（最旧在前）
+  if(!allSortedDates||!allSortedDates.length) return 'seq-1';
+  const idx = allSortedDates.indexOf(dateStr);
+  if(idx===-1) return 'seq-1';
+  const weekNum = Math.floor(idx/7)+1;
+  return 'seq-'+weekNum;
 }
 
-function saveWeekPhase(weekKey, phase){
-  weekPhases[weekKey]=phase;
+function saveWeekPhase(weekKey, phases){
+  weekPhases[weekKey]=phases;
   localStorage.setItem('h_week_phases',JSON.stringify(weekPhases));
-  // Also push to cloud via profile
-  if(currentUser) pushProfileToCloud();
+  if(currentUser) pushProfileToCloud().catch(()=>{});
 }
 
-function renderWeekPhaseEdit(weekKey){
-  const current=weekPhases[weekKey]||'';
-  const presets=['准备日','调理日','巩固期','挑战期','恢复期','大餐日','轻断食','维持期'];
-  const pEl=document.getElementById('wp-presets-'+weekKey);
-  if(pEl) pEl.innerHTML=presets.map(p=>
-    `<span class="phase-chip${current===p?' active':''}"
-      onclick="selectWeekPhase('${weekKey}','${p}')">${p}</span>`
-  ).join('');
+function getWeekPhases(weekKey){
+  const v=weekPhases[weekKey];
+  if(!v||!v.length) return [];
+  if(Array.isArray(v)) return v;
+  return [v]; // 兼容旧版单字符串
 }
 
-function selectWeekPhase(weekKey, phase){
-  const inp=document.getElementById('wp-inp-'+weekKey);
-  if(inp) inp.value=phase;
-  saveWeekPhase(weekKey, phase);
+function toggleWeekPhase(weekKey, phase){
+  const cur=getWeekPhases(weekKey);
+  const idx=cur.indexOf(phase);
+  const next=idx===-1?[...cur,phase]:cur.filter(p=>p!==phase);
+  saveWeekPhase(weekKey, next);
   renderHistory();
 }
 
-function commitWeekPhase(weekKey){
-  const inp=document.getElementById('wp-inp-'+weekKey);
-  if(!inp) return;
-  saveWeekPhase(weekKey, inp.value.trim());
-  renderHistory();
-}
+function renderWeekPhaseEdit(weekKey){ /* replaced by inline chips in renderHistory */ }
+function selectWeekPhase(weekKey, phase){ toggleWeekPhase(weekKey, phase); }
+function commitWeekPhase(weekKey){ /* no longer used */ }
+
 
 async function deleteHistoryRecord(dateStr){
   if(!confirm(`确定删除 ${dateStr} 的记录？\n\n删除后请点「☁️ 保存到云端」同步到数据库`)) return;
@@ -2212,45 +2450,49 @@ function renderHistory(){
   }
   cont.innerHTML='';
   const all=[...historyData].sort((a,b)=>b.date.localeCompare(a.date));
-  const wds=['日','一','二','三','四','五','六'];
 
-  // Group records into 7-day buckets by weekKey
+  // 所有记录按时间升序，每7条一组
+  const allSortedAsc=[...historyData].map(r=>r.date).sort();
+  // 筛选后的记录也需要用全局索引分组
   const weekMap={};
   recs.forEach(record=>{
-    const wk=getWeekKey(record.date);
+    const wk=getWeekKey(record.date, allSortedAsc);
     if(!weekMap[wk]) weekMap[wk]=[];
     weekMap[wk].push(record);
   });
-  const weekKeys=Object.keys(weekMap).sort((a,b)=>b.localeCompare(a));
+  // 按 seq 编号降序排列（最新的在前）
+  const weekKeys=Object.keys(weekMap).sort((a,b)=>{
+    const na=parseInt(a.replace('seq-',''));
+    const nb=parseInt(b.replace('seq-',''));
+    return nb-na;
+  });
+  const totalWeeks=parseInt(allSortedAsc.length>0?Math.ceil(allSortedAsc.length/7):1);
 
-  weekKeys.forEach((weekKey, wi)=>{
+  weekKeys.forEach((weekKey)=>{
+    const weekNum=parseInt(weekKey.replace('seq-',''));
     const weekRecs=weekMap[weekKey].sort((a,b)=>b.date.localeCompare(a.date));
-    const phase=weekPhases[weekKey]||'';
+    const activeTags=getWeekPhases(weekKey);
     const dates=weekRecs.map(r=>r.date).sort();
     const dStart=new Date(dates[0]+'T00:00:00');
     const dEnd=new Date(dates[dates.length-1]+'T00:00:00');
     const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
     const rangeStr=dates.length>1?`${fmt(dStart)} ~ ${fmt(dEnd)}`:fmt(dStart);
-    const presets=['准备日','调理日','巩固期','挑战期','恢复期','大餐日','轻断食','维持期'];
 
     const wg=document.createElement('div');
     wg.className='week-group';
     wg.innerHTML=`
       <div class="week-header">
         <div class="week-label">
-          <span class="week-num">第${weekKeys.length-wi}周</span>
+          <span class="week-num">第${weekNum}周</span>
           <span class="week-range">${rangeStr}　共${weekRecs.length}天</span>
         </div>
-        <div class="week-phase-wrap">
-          <input class="week-phase-input" id="wp-inp-${weekKey}"
-            value="${phase}" placeholder="本周标签…"
-            onblur="commitWeekPhase('${weekKey}')"
-            onkeydown="if(event.key==='Enter'){this.blur();}">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+          ${activeTags.map(t=>`<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:14px;background:var(--sage-light);color:var(--sage-dark);font-size:11px;font-weight:600">${t}</span>`).join('')}
         </div>
       </div>
-      <div style="margin-bottom:8px;display:flex;gap:5px;flex-wrap:wrap">
-        ${presets.map(p=>`<span class="phase-chip${phase===p?' active':''}"
-          onclick="selectWeekPhase('${weekKey}','${p}')" style="font-size:11px;padding:3px 10px">${p}</span>`).join('')}
+      <div style="margin-bottom:10px;display:flex;gap:5px;flex-wrap:wrap">
+        ${customPhases.map(p=>`<span class="phase-chip${activeTags.includes(p)?' active':''}"
+          onclick="toggleWeekPhase('${weekKey}','${p}')" style="font-size:11px;padding:3px 10px">${p}</span>`).join('')}
       </div>
       <div class="week-body" id="wb-${weekKey}"></div>`;
     cont.appendChild(wg);
@@ -2265,10 +2507,14 @@ function renderHistory(){
       if(record.bmi){const t=prev?trendTag(record.bmi,prev.bmi,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">BMI</span>${record.bmi}${t}</span>`);}
       if(record.bodyFatPct){const t=prev?trendTag(record.bodyFatPct,prev.bodyFatPct,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">体脂率</span>${record.bodyFatPct}%${t}</span>`);}
       if(record.fatMass){const t=prev?trendTag(record.fatMass,prev?.fatMass,true):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">脂肪量</span>${record.fatMass}kg${t}</span>`);}
+      if(record.muscleMass){const t=prev?trendTag(record.muscleMass,prev?.muscleMass,false):'';badges.push(`<span class="h-badge key"><span class="h-badge-lbl">肌肉量</span>${record.muscleMass}kg${t}</span>`);}
       if(record.muscle){const t=prev?trendTag(record.muscle,prev?.muscle,true):'';badges.push(`<span class="h-badge"><span class="h-badge-lbl">肌肉</span>${record.muscle}%${t}</span>`);}
       const exS=exSummary(record);
       if(exS){const ce=totalEx(record),pe=prev?totalEx(prev):null;const t=pe!==null?trendTag(ce,pe,false):'';badges.push(`<span class="h-badge"><span class="h-badge-lbl">运动</span>${exS}${t}</span>`);}
-      if(record.phase) badges.push(`<span class="h-badge" style="background:#f0f4ff;border-color:#c8d4f0;color:#4a6090"><span class="h-badge-lbl" style="color:#8090b0">阶段</span>${record.phase}</span>`);
+      if(record.phase){
+        const phases=Array.isArray(record.phase)?record.phase:[record.phase];
+        phases.forEach(ph=>{ if(ph) badges.push(`<span class="h-badge" style="background:#f0f4ff;border-color:#c8d4f0;color:#4a6090"><span class="h-badge-lbl" style="color:#8090b0">阶段</span>${ph}</span>`); });
+      }
       div.innerHTML=`
         <div class="history-hd" onclick="this.closest('.history-item').classList.toggle('open')">
           <div style="flex:1;min-width:0">
@@ -2294,9 +2540,9 @@ function exSummary(r){
   const p=[];if(steps)p.push(steps.toLocaleString()+'步');if(min)p.push(min+'分钟');return p.join(' · ');
 }
 function renderDetail(r){
-  const KEY=['weight','bmi','bodyFatPct','fatMass'];
+  const KEY=['weight','bmi','bodyFatPct','fatMass','muscleMass'];
   const stats=[
-    {k:'weight',l:'体重',u:'kg'},{k:'bmi',l:'BMI',u:''},{k:'bodyFatPct',l:'体脂率',u:'%'},{k:'fatMass',l:'脂肪量',u:'kg'},
+    {k:'weight',l:'体重',u:'kg'},{k:'bmi',l:'BMI',u:''},{k:'bodyFatPct',l:'体脂率',u:'%'},{k:'fatMass',l:'脂肪量',u:'kg'},{k:'muscleMass',l:'肌肉量',u:'kg'},
     {k:'fat',l:'脂肪(设备)',u:'%'},{k:'water',l:'水分',u:'%'},{k:'muscle',l:'肌肉',u:'%'},{k:'bodyAge',l:'体龄',u:'岁'},
     {k:'visceral',l:'内脂',u:''},{k:'bmr',l:'基础代谢',u:'kcal'},{k:'waistCm',l:'腰围',u:'cm'},{k:'hipCm',l:'臀围',u:'cm'},{k:'whr',l:'腰臀比',u:''},
     {k:'waterCups',l:'饮水',u:'杯'},{k:'waterMl',l:'饮水',u:'ml'},
@@ -2331,22 +2577,564 @@ function saveProfile(){
 // ══════════════════════════════════════════
 // PHASE PRESETS (Today page)
 // ══════════════════════════════════════════
-const PHASE_PRESETS=['准备日','调理日','巩固期','挑战期','恢复期','大餐日','轻断食','维持期'];
+// 阶段标签（用户可增删，存于 localStorage）
+const DEFAULT_PHASES=['准备日','纤体日','调理日','巩固日','挑战日','大餐日','轻断食','恢复日','维持期'];
+let customPhases = JSON.parse(localStorage.getItem('h_phases')||'null') || [...DEFAULT_PHASES];
+function saveCustomPhases(){ localStorage.setItem('h_phases', JSON.stringify(customPhases)); }
+// 今日阶段标签：多选，存为数组
+let todayPhases = [];  // 当天选中的标签数组
+
+function getTodayPhasesFromField(){
+  const v=document.getElementById('f-phase')?.value||'';
+  if(!v) return [];
+  try{ const p=JSON.parse(v); return Array.isArray(p)?p:(p?[p]:[]); }
+  catch(e){ return v?[v]:[]; }
+}
+function setTodayPhasesField(arr){
+  const el=document.getElementById('f-phase');
+  if(el) el.value=arr.length?JSON.stringify(arr):'';
+  todayPhases=arr;
+}
+
 function renderPhasePresets(){
-  const cont=document.getElementById('phase-presets');if(!cont)return;
-  const cur=document.getElementById('f-phase')?.value||'';
-  cont.innerHTML=PHASE_PRESETS.map(p=>
-    `<button class="phase-chip${cur===p?' active':''}" onclick="selectPhase('${p}')">${p}</button>`
+  const cont=document.getElementById('phase-presets');
+  const selCont=document.getElementById('today-phase-selected');
+  if(!cont) return;
+  const cur=getTodayPhasesFromField();
+
+  // 已选标签展示（带×删除）
+  if(selCont){
+    if(cur.length){
+      selCont.innerHTML=cur.map(p=>
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:16px;background:var(--sage-light);color:var(--sage-dark);font-size:12px;font-weight:600">
+          ${p}
+          <span onclick="selectPhase('${p}')" style="cursor:pointer;opacity:.7;font-size:11px;margin-left:2px">×</span>
+        </span>`
+      ).join('');
+    } else {
+      selCont.innerHTML='<span style="font-size:12px;color:var(--gray)">点击下方标签选择今日阶段</span>';
+    }
+  }
+
+  // 选择器芯片
+  cont.innerHTML=customPhases.map(p=>
+    `<button class="phase-chip${cur.includes(p)?' active':''}" onclick="selectPhase('${p}')">${p}</button>`
   ).join('');
 }
+
 function selectPhase(p){
-  const el=document.getElementById('f-phase');if(el)el.value=p;
+  const cur=getTodayPhasesFromField();
+  const idx=cur.indexOf(p);
+  const next=idx===-1?[...cur,p]:cur.filter(x=>x!==p);
+  setTodayPhasesField(next);
   renderPhasePresets();
 }
 
+function togglePhaseEditor(){
+  const ed=document.getElementById('phase-editor');
+  if(!ed) return;
+  const showing=ed.style.display!=='none';
+  ed.style.display=showing?'none':'block';
+  if(!showing) renderPhaseManageList();
+}
+
+function renderPhaseManageList(){
+  const cont=document.getElementById('phase-manage-list');
+  if(!cont) return;
+  cont.innerHTML=customPhases.map(p=>
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:16px;border:1.5px solid #f87171;background:#fff0f0;color:#ef4444;font-size:12px;cursor:pointer"
+      onclick="removeCustomPhase('${p}')" title="点击删除">
+      ${p} <span style="opacity:.7">×</span>
+    </span>`
+  ).join('');
+}
+
+function addCustomPhase(){
+  const inp=document.getElementById('phase-new-input');
+  const text=inp?.value.trim();
+  if(!text){showToast('请输入标签名');return;}
+  if(customPhases.includes(text)){showToast('标签已存在');return;}
+  customPhases.push(text);
+  saveCustomPhases();
+  inp.value='';
+  renderPhaseManageList();
+  renderPhasePresets();
+  showToast(`✅ 已添加标签「${text}」`);
+}
+
+function removeCustomPhase(p){
+  if(!confirm(`确定删除标签「${p}」？`)) return;
+  customPhases=customPhases.filter(x=>x!==p);
+  saveCustomPhases();
+  // 同时从今日已选中移除
+  const cur=getTodayPhasesFromField().filter(x=>x!==p);
+  setTodayPhasesField(cur);
+  renderPhaseManageList();
+  renderPhasePresets();
+  showToast(`已删除标签「${p}」`);
+}
+
+
+
 // ══════════════════════════════════════════
-// UTILS
+// AI 智能识别填写（支持 Gemini 免费 / Anthropic 付费）
 // ══════════════════════════════════════════
+let _aiTab = 'img';
+let _aiImgBase64 = null;
+let _aiImgMime = 'image/jpeg';
+let _aiResult = {};
+// 只接受已知provider，防止旧值（如'anthropic'）触发错误分支
+const _savedProvider = localStorage.getItem('ai_provider') || 'silicon';
+let _aiProvider = ['silicon','gemini'].includes(_savedProvider) ? _savedProvider : 'silicon';
+
+function showAiInput(){
+  document.getElementById('ai-modal').style.display='flex';
+  const sl=document.getElementById('ai-silicon-key');
+  const gm=document.getElementById('ai-gemini-key');
+  if(sl) sl.value=localStorage.getItem('ai_silicon_key')||'';
+  if(gm) gm.value=localStorage.getItem('ai_gemini_key')||'';
+  switchAiProvider(_aiProvider, true);
+  clearAiResult();
+}
+function hideAiInput(fullReset){
+  document.getElementById('ai-modal').style.display='none';
+  // fullReset=true 才清图片（点×关闭按钮）；applyAiResult填入后不清，保留供下次识别
+  if(fullReset){
+    _aiImgBase64=null;
+    _aiImgMime='image/jpeg';
+    document.getElementById('ai-img-preview').style.display='none';
+    document.getElementById('ai-img-dropzone').style.display='block';
+    document.getElementById('ai-text-input').value='';
+  }
+  clearAiResult();
+}
+function switchAiTab(tab){
+  _aiTab=tab;
+  document.getElementById('ai-img-panel').style.display=tab==='img'?'block':'none';
+  document.getElementById('ai-text-panel').style.display=tab==='text'?'block':'none';
+  document.getElementById('ai-tab-img').style.background=tab==='img'?'#6366f1':'#f3f4f6';
+  document.getElementById('ai-tab-img').style.color=tab==='img'?'#fff':'#6b7280';
+  document.getElementById('ai-tab-text').style.background=tab==='text'?'#6366f1':'#f3f4f6';
+  document.getElementById('ai-tab-text').style.color=tab==='text'?'#fff':'#6b7280';
+  clearAiResult();
+}
+
+const PROV_COLORS = {
+  silicon: {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'},
+  gemini:  {bg:'#f0fdf4', color:'#059669', border:'#6ee7b7'},
+};
+
+function switchAiProvider(prov, silent){
+  _aiProvider = prov;
+  localStorage.setItem('ai_provider', prov);
+  ['silicon','gemini'].forEach(p=>{
+    const btn=document.getElementById('ai-prov-'+p);
+    const cfg=document.getElementById('ai-cfg-'+p);
+    if(!btn||!cfg) return;
+    const active=p===prov;
+    const c=PROV_COLORS[p];
+    btn.style.background  = active ? c.bg    : '#f3f4f6';
+    btn.style.color       = active ? c.color  : '#6b7280';
+    btn.style.borderColor = active ? c.border : '#e5e7eb';
+    cfg.style.display     = active ? 'block'  : 'none';
+  });
+  // 所有提供商均支持图片识别
+  const imgTab=document.getElementById('ai-tab-img');
+  if(imgTab){ imgTab.style.opacity='1'; imgTab.style.pointerEvents='auto'; }
+  if(!silent) updateProxyStatus();
+}
+
+function saveAiConfig(){
+  const sl=document.getElementById('ai-silicon-key');
+  const gm=document.getElementById('ai-gemini-key');
+  if(sl) localStorage.setItem('ai_silicon_key',   sl.value.trim());
+  if(gm) localStorage.setItem('ai_gemini_key',     gm.value.trim());
+  updateProxyStatus();
+}
+function saveProxyUrl(){ saveAiConfig(); }
+
+function updateProxyStatus(){
+  const el=document.getElementById('ai-proxy-status');
+  if(!el) return;
+  let k='';
+  if(_aiProvider==='silicon') k=localStorage.getItem('ai_silicon_key')||'';
+  else k=localStorage.getItem('ai_gemini_key')||'';
+  el.textContent = k ? '✅ 已配置' : '⚠️ 未填写';
+  el.style.color  = k ? '#16a34a' : '#d97706';
+}
+function showProxyHelp(){
+  document.getElementById('proxy-help-modal').style.display='flex';
+}
+
+
+
+function handleAiImgDrop(e){
+  e.preventDefault();
+  document.getElementById('ai-img-dropzone').style.borderColor='#d1d5db';
+  const file=e.dataTransfer.files[0];
+  if(file&&file.type.startsWith('image/')) loadAiImage(file);
+}
+function handleAiImgSelect(e){
+  const file=e.target.files[0];
+  if(file) loadAiImage(file);
+}
+function loadAiImage(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    _aiImgBase64=ev.target.result.split(',')[1];
+    _aiImgMime=file.type||'image/jpeg';
+    document.getElementById('ai-preview-img').src=ev.target.result;
+    document.getElementById('ai-img-preview').style.display='block';
+    document.getElementById('ai-img-dropzone').style.display='none';
+    clearAiResult();
+  };
+  reader.readAsDataURL(file);
+}
+
+// 字段说明（与网站输入项一一对应）：
+// weight      = 体重，单位 kg
+// bodyFatPct  = 体脂率，单位 %（如 30.0）
+// fat         = 设备显示的脂肪量，单位 kg（注意：不是脂肪率%，是脂肪量kg）
+// water       = 体水分/含水量，单位 %（如 51.3；若图中显示 kg 则忽略，只取 % 那项）
+// muscle      = 肌肉率，单位 %（如 65.3；设备显示"肌肉%"或"肌肉率"那项）
+// muscleMass  = 肌肉量，单位 kg（如 43.2；设备显示"肌肉量kg"那项，与 muscle% 不同）
+// bodyAge     = 体龄，纯整数
+// visceral    = 内脏脂肪等级，纯数字（如 8 或 8.0）
+// bmr         = 基础代谢率，单位 kcal，纯整数（如 1389）
+// waistCm     = 腰围，单位 cm
+// hipCm       = 臀围，单位 cm
+
+const FIELD_PROMPT=`从图片识别文字后，提取以下健康指标的纯数值（直接输出JSON，不要单位，不要解释，没有则省略）：
+weight=体重, bodyFatPct=体脂率, fat=脂肪量(kg), water=体水分(%),
+muscle=肌肉率(%), muscleMass=肌肉量(kg), bodyAge=体龄, visceral=内脏脂肪, bmr=基础代谢率,
+waistCm=腰围, hipCm=臀围
+注意：muscle是肌肉率（%），muscleMass是肌肉量（kg），两者是不同字段，都要提取。
+示例：{"weight":"67.4","bodyFatPct":"30.0","fat":"20.2","water":"51.3","muscle":"65.3","muscleMass":"43.2","visceral":"8","bmr":"1389","bodyAge":"40"}`;
+
+// 图片模式专用 prompt（DeepSeek-OCR 先 OCR 再提取）
+// IMG_PROMPT 已废弃，图片模式改为两步：DeepSeek-OCR → Qwen 提取，使用 FIELD_PROMPT 提取
+
+async function runAiRecognize(){
+  const btn=document.getElementById('ai-recognize-btn');
+  const errEl=document.getElementById('ai-error');
+  errEl.style.display='none';
+  if(_aiTab==='img'&&!_aiImgBase64){ showAiErr('请先上传截图'); return; }
+  if(_aiTab==='text'&&!document.getElementById('ai-text-input').value.trim()){ showAiErr('请先输入数据文字'); return; }
+  btn.disabled=true; btn.textContent='⏳ 识别中…';
+  try{
+    if(_aiProvider==='silicon')        await runSiliconFlow();
+    else if(_aiProvider==='qianwen')   await runQianwen();
+    else if(_aiProvider==='gemini')    await runGemini();
+    else if(_aiProvider==='anthropic') await runAnthropic();
+    else { switchAiProvider('silicon'); await runSiliconFlow(); }
+  }catch(e){
+    if(e.message.includes('Failed to fetch')||e.message.includes('NetworkError')){
+      showAiErr('网络连接失败，请检查网络或换一个提供商');
+    } else {
+      showAiErr('识别失败：'+e.message);
+    }
+  }finally{
+    btn.disabled=false; btn.textContent='🤖 重新识别';
+  }
+}
+
+// ── 硅基流动（国内直连，免费）
+async function runSiliconFlow(){
+  const apiKey=(localStorage.getItem('ai_silicon_key')||'').trim();
+  if(!apiKey){ showAiErr('请填写硅基流动 API Key（点右上角「免费注册获取」）'); return; }
+
+  if(_aiTab==='img'){
+    // ── 图片模式：用 Qwen2.5-VL-7B（视觉语言模型，支持图片+有免费额度）直接识别
+    // 主模型：Qwen/Qwen2.5-VL-7B-Instruct（硅基流动官方推荐视觉模型）
+    // 降级：Qwen/Qwen2-VL-7B-Instruct（旧版，同样支持图片）
+    const visionModels = [
+      'Qwen/Qwen2.5-VL-7B-Instruct',
+      'Qwen/Qwen2-VL-7B-Instruct'
+    ];
+    let raw = '';
+    for(const model of visionModels){
+      console.log(`[图片识别] 使用模型: ${model}`);
+      try{
+        const visionResp = await fetch('https://api.siliconflow.cn/v1/chat/completions',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+          body:JSON.stringify({
+            model,
+            max_tokens:800,
+            messages:[{role:'user',content:[
+              {type:'image_url',image_url:{url:'data:'+_aiImgMime+';base64,'+_aiImgBase64}},
+              {type:'text',text:`请识别这张体测报告图片中的所有数值，提取以下健康指标，只返回JSON，不要包含任何解释文字。\n${FIELD_PROMPT}`}
+            ]}]
+          })
+        });
+        if(!visionResp.ok){
+          const e=await visionResp.json().catch(()=>({}));
+          const msg=e?.error?.message||e?.message||visionResp.statusText;
+          if(visionResp.status===401){ showAiErr('API Key 无效，请重新获取'); return; }
+          if(visionResp.status===402||visionResp.status===403){ showAiErr('余额不足，请登录 siliconflow.cn 充值'); return; }
+          console.warn(`[${model}] 失败 ${visionResp.status}: ${msg}，尝试下一个模型...`);
+          continue;
+        }
+        const visionData = await visionResp.json();
+        raw = visionData?.choices?.[0]?.message?.content||'';
+        console.log(`[${model} 识别结果]`, raw);
+        if(raw.trim()) break; // 有内容则跳出，否则尝试下一个模型
+        console.warn(`[${model}] 返回空内容，尝试下一个模型...`);
+      }catch(err){
+        console.warn(`[${model}] 异常:`, err);
+      }
+    }
+    if(!raw.trim()){ showAiErr('图片识别失败：所有模型均无法返回结果，请检查图片是否清晰'); return; }
+    parseAndShowResult(raw);
+
+  } else {
+    // 文字模式：直接用 Qwen 提取
+    const messages=buildOpenAIMessages();
+    const resp=await fetch('https://api.siliconflow.cn/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'Qwen/Qwen2.5-7B-Instruct',max_tokens:400,messages})
+    });
+    if(!resp.ok){
+      const e=await resp.json().catch(()=>({}));
+      const msg=e?.error?.message||e?.message||resp.statusText;
+      if(resp.status===401) showAiErr('API Key 无效，请重新获取');
+      else if(resp.status===402) showAiErr('余额不足，请登录 siliconflow.cn 充值');
+      else showAiErr(`硅基流动错误 ${resp.status}：${msg}`);
+      return;
+    }
+    const data=await resp.json();
+    const raw=data?.choices?.[0]?.message?.content||'';
+    parseAndShowResult(raw);
+  }
+}
+
+// ── 通义千问（阿里云 DashScope，国内直连，免费额度）
+async function runQianwen(){
+  const apiKey=(localStorage.getItem('ai_qianwen_key')||'').trim();
+  if(!apiKey){ showAiErr('请填写通义千问 API Key（点右上角「阿里云百炼获取」）'); return; }
+
+  let body;
+  if(_aiTab==='img'){
+    body={
+      model:'qwen-vl-plus',
+      input:{messages:[{role:'user',content:[
+        {image:'data:'+_aiImgMime+';base64,'+_aiImgBase64},
+        {text:FIELD_PROMPT}
+      ]}]}
+    };
+    const resp=await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify(body)
+    });
+    if(!resp.ok){
+      const e=await resp.json().catch(()=>({}));
+      const msg=e?.message||resp.statusText;
+      if(resp.status===401) showAiErr('API Key 无效');
+      else showAiErr(`通义千问错误 ${resp.status}：${msg}`);
+      return;
+    }
+    const data=await resp.json();
+    const raw=data?.output?.choices?.[0]?.message?.content?.[0]?.text||'';
+    parseAndShowResult(raw);
+  } else {
+    // 文字模式用文本模型
+    const txt=document.getElementById('ai-text-input').value.trim();
+    const resp=await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({
+        model:'qwen-plus',
+        max_tokens:400,
+        messages:[{role:'user',content:`以下是体测数据，${FIELD_PROMPT}\n\n数据：\n${txt}`}]
+      })
+    });
+    if(!resp.ok){
+      const e=await resp.json().catch(()=>({}));
+      showAiErr(`通义千问错误 ${resp.status}：${e?.error?.message||resp.statusText}`);
+      return;
+    }
+    const data=await resp.json();
+    const raw=data?.choices?.[0]?.message?.content||'';
+    parseAndShowResult(raw);
+  }
+}
+
+// ── 构造 OpenAI 格式消息（Gemini/Anthropic 复用）
+function buildOpenAIMessages(){
+  if(_aiTab==='img'){
+    return [{role:'user',content:[
+      {type:'image_url',image_url:{url:'data:'+_aiImgMime+';base64,'+_aiImgBase64}},
+      {type:'text',text:`请识别这张体测报告图片，提取所有数值，${FIELD_PROMPT}`}
+    ]}];
+  } else {
+    const txt=document.getElementById('ai-text-input').value.trim();
+    return [{role:'user',content:`以下是体测数据，${FIELD_PROMPT}\n\n数据：\n${txt}`}];
+  }
+}
+
+// ── Gemini（需翻墙）
+async function runGemini(){
+  const apiKey=(localStorage.getItem('ai_gemini_key')||'').trim();
+  if(!apiKey){ showAiErr('请填写 Gemini API Key'); return; }
+  const URL=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  let parts = _aiTab==='img'
+    ? [{inlineData:{mimeType:_aiImgMime,data:_aiImgBase64}},{text:FIELD_PROMPT}]
+    : [{text:`以下是体测数据，${FIELD_PROMPT}\n\n数据：\n${document.getElementById('ai-text-input').value.trim()}`}];
+  const resp=await fetch(URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}]})});
+  if(!resp.ok){
+    const e=await resp.json().catch(()=>({}));
+    const msg=e?.error?.message||resp.statusText;
+    if(resp.status===400) showAiErr('API Key 无效');
+    else if(resp.status===429) showAiErr('请求太频繁，稍等再试');
+    else showAiErr(`Gemini 错误 ${resp.status}：${msg}`);
+    return;
+  }
+  const data=await resp.json();
+  parseAndShowResult(data?.candidates?.[0]?.content?.parts?.[0]?.text||'');
+}
+
+// ── Anthropic（需 CF Worker）
+async function runAnthropic(){
+  const proxyUrl=(localStorage.getItem('ai_proxy_url')||'').trim().replace(/\/+$/,'');
+  if(!proxyUrl){ showAiErr('请填写 Cloudflare Worker 代理地址'); return; }
+  const messages = _aiTab==='img'
+    ? [{role:'user',content:[{type:'image',source:{type:'base64',media_type:_aiImgMime,data:_aiImgBase64}},{type:'text',text:FIELD_PROMPT}]}]
+    : [{role:'user',content:`以下是体测数据，${FIELD_PROMPT}\n\n数据：\n${document.getElementById('ai-text-input').value.trim()}`}];
+  const resp=await fetch(proxyUrl+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages})});
+  if(!resp.ok){showAiErr(`代理错误 ${resp.status}`);return;}
+  const data=await resp.json();
+  if(data.error){showAiErr('识别错误：'+data.error.message);return;}
+  parseAndShowResult(data.content?.find(b=>b.type==='text')?.text||'');
+}
+
+// ── 通用结果解析（更宽松的JSON提取）
+function parseAndShowResult(raw){
+  if(!raw||!raw.trim()){ showAiErr('AI 返回了空内容，请重试'); return; }
+
+  let parsed = null;
+
+  // 方式1：找最大的 {...} 块（贪婪匹配，避免非贪婪截断嵌套JSON）
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if(jsonMatch){
+    try{ parsed = JSON.parse(jsonMatch[0]); }catch(e){
+      // JSON解析失败时尝试修复：去掉尾部多余内容
+      try{
+        const cleaned = jsonMatch[0].replace(/,\s*\}/, '}').replace(/,\s*$/, '');
+        parsed = JSON.parse(cleaned);
+      }catch(e2){}
+    }
+  }
+
+  // 方式2：找 ```json ... ``` 代码块
+  if(!parsed){
+    const codeMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if(codeMatch){
+      try{ parsed = JSON.parse(codeMatch[1].trim()); }catch(e){}
+    }
+  }
+
+  // 方式3：模型可能返回 key: value 格式而非JSON，手动解析
+  if(!parsed || Object.keys(parsed).length===0){
+    parsed = {};
+    const fieldMap = {
+      'weight|体重':          'weight',
+      'bodyFatPct|体脂率':    'bodyFatPct',
+      'fat|脂肪量|脂肪':      'fat',
+      'water|体水分|水分':    'water',
+      'muscle|肌肉率|肌肉':   'muscle',
+      'bodyAge|体龄':         'bodyAge',
+      'visceral|内脏脂肪|内脂': 'visceral',
+      'bmr|基础代谢':         'bmr',
+      'waistCm|腰围':         'waistCm',
+      'hipCm|臀围':           'hipCm',
+    };
+    for(const [pattern, key] of Object.entries(fieldMap)){
+      const re = new RegExp(`(?:${pattern})[^\\d]*([\\d.]+)`, 'i');
+      const m = raw.match(re);
+      if(m) parsed[key] = m[1];
+    }
+  }
+
+  // 过滤空值和非数字值
+  Object.keys(parsed).forEach(k=>{
+    const v = String(parsed[k]).trim();
+    if(!v || isNaN(parseFloat(v))) delete parsed[k];
+    else parsed[k] = v;
+  });
+
+  if(!Object.keys(parsed).length){
+    showAiErr(`未识别到数值。AI原始返回：${raw.slice(0,200)}`);
+    return;
+  }
+  _aiResult = parsed;
+  showAiResult(parsed);
+}
+
+
+const AI_FIELD_LABELS={
+  weight:'体重(kg)', bodyFatPct:'体脂率(%)', fat:'脂肪量(kg)',
+  water:'体水分(%)', muscle:'肌肉率(%)', bodyAge:'体龄',
+  visceral:'内脏脂肪', bmr:'基础代谢(kcal)', waistCm:'腰围(cm)', hipCm:'臀围(cm)'
+};
+
+function showAiResult(result){
+  const list=document.getElementById('ai-result-list');
+  list.innerHTML=Object.entries(result).map(([k,v])=>`
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 10px;text-align:center">
+      <div style="font-size:11px;color:#16a34a;font-weight:600;margin-bottom:2px">${AI_FIELD_LABELS[k]||k}</div>
+      <div style="font-size:16px;font-weight:700;color:#14532d">${v}</div>
+    </div>`).join('');
+  document.getElementById('ai-result-area').style.display='block';
+  document.getElementById('ai-action-area').style.display='none';
+}
+
+function clearAiResult(){
+  _aiResult={};
+  document.getElementById('ai-result-area').style.display='none';
+  document.getElementById('ai-action-area').style.display='block';
+  const btn=document.getElementById('ai-recognize-btn');
+  if(btn){btn.textContent='🤖 开始识别';btn.disabled=false;}
+  const e=document.getElementById('ai-error');
+  if(e) e.style.display='none';
+  // 注意：不清除 _aiImgBase64，保留图片供「重新识别」使用
+}
+
+function showAiErr(msg){
+  const e=document.getElementById('ai-error');
+  e.textContent='⚠️ '+msg; e.style.display='block';
+}
+
+const AI_TO_FIELD={
+  weight:'f-weight', bodyFatPct:'f-body-fat-pct',
+  fat:'f-fat', water:'f-water', muscle:'f-muscle',
+  muscleMass:'f-muscle-mass',
+  bodyAge:'f-body-age', visceral:'f-visceral',
+  bmr:'f-bmr', waistCm:'f-waist-cm', hipCm:'f-hip-cm'
+};
+
+function applyAiResult(){
+  if(!Object.keys(_aiResult).length) return;
+  let filled=0;
+  Object.entries(_aiResult).forEach(([k,v])=>{
+    const fieldId=AI_TO_FIELD[k];
+    if(!fieldId) return;
+    const el=document.getElementById(fieldId);
+    if(!el) return;
+    // muscleMass 是 readonly（自动计算字段），但AI直接识别到时允许填入
+    if(el.readOnly && fieldId==='f-muscle-mass'){
+      el.value=v; filled++;
+    } else if(!el.readOnly){
+      el.value=v; filled++;
+    }
+  });
+  calcDerived(); calcWHR();
+  hideAiInput();
+  showToast(`✅ 已自动填入 ${filled} 项数据`);
+}
+
 function showToast(msg, dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function openImg(src){document.getElementById('modal-img').src=src;document.getElementById('img-modal').classList.add('show');}
 
